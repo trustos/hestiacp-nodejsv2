@@ -114,23 +114,40 @@ class NodeJsSetup extends BaseSetup
             foreach ($existingEnv as $line) {
                 if (strpos($line, "=") !== false) {
                     list($key, $value) = explode("=", $line, 2);
-                    $envContent[$key] = $value;
+                    $envContent[$key] = trim($value); // Preserve existing format
                 }
             }
         }
 
         // Add or update PORT variable
-        $envContent["PORT"] = trim($options["port"]);
+        $port = trim($options["port"]);
+        $envContent["PORT"] = $this->formatEnvValue($port);
 
         // Prepare the new .env content
         $newEnvContent = "";
         foreach ($envContent as $key => $value) {
-            $newEnvContent .= "$key=\"$value\"\n";
+            $newEnvContent .= "$key=$value\n";
         }
 
         $tmpFile = $this->saveTempFile($newEnvContent);
 
         return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
+    }
+
+    private function formatEnvValue($value)
+    {
+        // If the value is already quoted, return it as is
+        if (preg_match('/^(["\']).*\1$/', $value)) {
+            return $value;
+        }
+
+        // If the value contains spaces or special characters, add quotes
+        if (preg_match('/[\s\'"\\\\]/', $value)) {
+            return '"' . str_replace('"', '\\"', $value) . '"';
+        }
+
+        // Otherwise, return the value as is
+        return $value;
     }
 
     public function createAppProxyTemplates(array $options = null)
