@@ -49,8 +49,8 @@ check_hestia_demo_mode
 #                       Action                             #
 #----------------------------------------------------------#
 
-pm2 start $HOMEDIR/$user/web/$domain/private/nodeapp/$entrypoint
-pm2 save
+sudo -u $user pm2 start $HOMEDIR/$user/web/$domain/private/nodeapp/$entrypoint
+sudo -u $user pm2 save
 
 #----------------------------------------------------------#
 #                       Hestia                             #
