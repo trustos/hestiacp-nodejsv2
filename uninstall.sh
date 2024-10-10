@@ -1,4 +1,3 @@
-```bash
 #!/bin/bash
 
 BLUE="\e[34m"
