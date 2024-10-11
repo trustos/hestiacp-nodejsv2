@@ -52,6 +52,15 @@ check_hestia_demo_mode
 sudo -u $user pm2 start $HOMEDIR/$user/web/$domain/private/nodeapp/$entrypoint
 sudo -u $user pm2 save
 
+# Generate and execute PM2 startup script
+startup_script=$(sudo -u $user pm2 startup | grep "sudo")
+if [ -n "$startup_script" ]; then
+    eval "$startup_script"
+    echo "PM2 startup script executed successfully."
+else
+    echo "Failed to generate PM2 startup script."
+fi
+
 #----------------------------------------------------------#
 #                       Hestia                             #
 #----------------------------------------------------------#
