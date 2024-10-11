@@ -30,13 +30,17 @@ class NodeJsSetup extends BaseSetup
         "form" => [
             "node_version" => [
                 "type" => "select",
-                "options" => ["v20.10.0", "v18.18.2", "v16.20.2"],
+                "options" => ["v22.9.0, v20.18.0", "v18.20.4", "v16.20.2"],
             ],
             "start_script" => [
                 "type" => "text",
                 "placeholder" => "npm run start",
             ],
-            "port" => ["type" => "text", "placeholder" => "3000"],
+            "port" => [
+                "type" => "text",
+                "placeholder" => "3000",
+                "value" => "",
+            ],
         ],
         "database" => false,
         "server" => [
@@ -45,6 +49,27 @@ class NodeJsSetup extends BaseSetup
             ],
         ],
     ];
+
+    protected function readExistingEnv()
+    {
+        $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
+        $envContent = [];
+
+        if (file_exists($envPath)) {
+            $existingEnv = file(
+                $envPath,
+                FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
+            );
+            foreach ($existingEnv as $line) {
+                if (strpos($line, "=") !== false) {
+                    list($key, $value) = explode("=", $line, 2);
+                    $envContent[trim($key)] = trim($value, " \t\n\r\0\x0B\"'");
+                }
+            }
+        }
+
+        return $envContent;
+    }
 
     public function __construct($domain, HestiaApp $appcontext)
     {
@@ -56,15 +81,53 @@ class NodeJsSetup extends BaseSetup
 
     public function install(array $options = null)
     {
-        $this->createAppDir();
-        $this->createConfDir();
-        $this->createAppEntryPoint($options);
-        $this->createAppNvmVersion($options);
-        $this->createAppEnv($options);
-        $this->createPublicHtmlConfigFile();
-        $this->createAppProxyTemplates($options);
-        $this->createAppConfig($options);
-        $this->pm2StartApp();
+        $existingEnv = $this->readExistingEnv();
+
+        if (empty($options)) {
+            // If options are not provided, it means we're displaying the form
+            // Dynamically add form fields for each .env variable
+            foreach ($existingEnv as $key => $value) {
+                $this->config["form"][$key] = [
+                    "type" => "text",
+                    "value" => $value,
+                    "label" => $key,
+                ];
+            }
+
+            // Ensure that required fields are always present
+            if (!isset($this->config["form"]["PORT"])) {
+                $this->config["form"]["PORT"] = [
+                    "type" => "text",
+                    "placeholder" => "3000",
+                    "label" => "PORT",
+                ];
+            }
+            if (!isset($this->config["form"]["start_script"])) {
+                $this->config["form"]["start_script"] = [
+                    "type" => "text",
+                    "placeholder" => "npm run start",
+                    "label" => "Start Script",
+                ];
+            }
+            if (!isset($this->config["form"]["node_version"])) {
+                $this->config["form"]["node_version"] = [
+                    "type" => "select",
+                    "options" => ["v22.9.0, v20.18.0", "v18.20.4", "v16.20.2"],
+                    "label" => "Node Version",
+                ];
+            }
+        } else {
+            // Proceed with the installation
+            $this->createAppDir();
+            $this->createConfDir();
+            $this->createAppEntryPoint($options);
+            $this->createAppNvmVersion($options);
+            $this->createAppEnv($options);
+            $this->createPublicHtmlConfigFile();
+            $this->createAppProxyTemplates($options);
+            $this->createAppConfig($options);
+            $this->pm2StartApp();
+        }
 
         return true;
     }
@@ -105,25 +168,12 @@ class NodeJsSetup extends BaseSetup
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
         $envContent = [];
 
-        // Read existing .env file if it exists
-        if (file_exists($envPath)) {
-            $existingEnv = file(
-                $envPath,
-                FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
-            );
-            foreach ($existingEnv as $line) {
-                if (strpos($line, "=") !== false) {
-                    list($key, $value) = explode("=", $line, 2);
-                    $envContent[$key] = trim($value); // Preserve existing format
-                }
+        foreach ($options as $key => $value) {
+            if ($key !== "node_version" && $key !== "start_script") {
+                $envContent[$key] = $this->formatEnvValue($value);
             }
         }
 
-        // Add or update PORT variable
-        $port = trim($options["port"]);
-        $envContent["PORT"] = $this->formatEnvValue($port);
-
-        // Prepare the new .env content
         $newEnvContent = "";
         foreach ($envContent as $key => $value) {
             $newEnvContent .= "$key=$value\n";
@@ -182,19 +232,45 @@ class NodeJsSetup extends BaseSetup
 
     public function createAppConfig(array $options = null)
     {
-        $config =
-            "PORT=" .
-            trim($options["port"]) .
-            '|START_SCRIPT="' .
-            trim($options["start_script"]) .
-            '"|NODE_VERSION=' .
-            trim($options["node_version"]);
+        $configContent = [];
+
+        // Add standard configurations
+        $configContent[] = "PORT=" . trim($options["PORT"] ?? "3000");
+        $configContent[] =
+            'START_SCRIPT="' .
+            trim($options["start_script"] ?? "npm run start") .
+            '"';
+        $configContent[] =
+            "NODE_VERSION=" . trim($options["node_version"] ?? "v20.20.2");
+
+        // Add all other options from the form, excluding certain keys
+        $excludeKeys = ["PORT", "start_script", "node_version"];
+        foreach ($options as $key => $value) {
+            if (!in_array($key, $excludeKeys)) {
+                // Format the value appropriately
+                $formattedValue = $this->formatConfigValue($value);
+                $configContent[] = strtoupper($key) . "=" . $formattedValue;
+            }
+        }
+
+        // Join all config entries
+        $config = implode("|", $configContent);
+
         $file = $this->saveTempFile($config);
 
         return $this->nodeJsUtils->moveFile(
             $file,
             $this->nodeJsPaths->getConfigFile($this->domain)
         );
+    }
+
+    private function formatConfigValue($value)
+    {
+        // If the value contains spaces or special characters, add quotes
+        if (preg_match('/[\s\'"\\\\]/', $value)) {
+            return '"' . str_replace('"', '\\"', $value) . '"';
+        }
+        return $value;
     }
 
     public function createPublicHtmlConfigFile()
