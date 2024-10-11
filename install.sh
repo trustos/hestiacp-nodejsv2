@@ -20,8 +20,9 @@ echo -e "${BLUE}┬ ┬┌─┐┌─┐┌┬┐┬┌─┐┌─┐┌─┐
 ┴ ┴└─┘└─┘ ┴ ┴┴ ┴└─┘┴     ┘└┘└─┘─┴┘└─┘└┘└─┘${ENDCOLOR}"
 
 echo -e "───────────────────────────────────────────────"
-echo -e "${YELLOW}This project is inspired by and forked from:${ENDCOLOR}"
-echo -e "${YELLOW}https://github.com/JLFdzDev/hestiacp-nodejs${ENDCOLOR}"
+echo -e "${YELLOW}This project is a fork of 'hestiacp-nodejs' by JLFdzDev${ENDCOLOR}"
+echo -e "${YELLOW}Original project: https://github.com/JLFdzDev/hestiacp-nodejs${ENDCOLOR}"
+echo -e "${YELLOW}Licensed under GNU General Public License v3.0 (GPL-3.0)${ENDCOLOR}"
 echo -e "───────────────────────────────────────────────"
 
 # Function to handle errors
