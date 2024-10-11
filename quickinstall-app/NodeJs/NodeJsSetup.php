@@ -22,7 +22,7 @@ class NodeJsSetup extends BaseSetup
         "name" => "NodeJs",
         "group" => "node",
         "enabled" => true,
-        "version" => "1.0.0",
+        "version" => "2.0.0",
         "thumbnail" => "nodejs.png",
     ];
     protected $appname = "NodeJs";
