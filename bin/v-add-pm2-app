@@ -49,16 +49,42 @@ check_hestia_demo_mode
 #                       Action                             #
 #----------------------------------------------------------#
 
-sudo -u $user pm2 start $HOMEDIR/$user/web/$domain/private/nodeapp/$entrypoint
-sudo -u $user pm2 save
+# Start PM2 process
+if sudo -u $user pm2 start $HOMEDIR/$user/web/$domain/private/nodeapp/$entrypoint; then
+    $BIN/v-log-action "$user" "Info" "Web" "Started PM2 process for $domain."
+else
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to start PM2 process for $domain."
+    exit 1
+fi
 
-# Generate and execute PM2 startup script
+# Save PM2 process list
+if sudo -u $user pm2 save; then
+    $BIN/v-log-action "$user" "Info" "Web" "Saved PM2 process list for $domain."
+else
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to save PM2 process list for $domain."
+    exit 1
+fi
+
+# Attempt to remove any existing PM2 startup configuration
+unstartup_output=$(sudo -u $user pm2 unstartup 2>&1)
+if [[ $unstartup_output == *"PM2 already stopped"* ]]; then
+    $BIN/v-log-action "$user" "Info" "Web" "No existing PM2 startup configuration found for $domain."
+else
+    $BIN/v-log-action "$user" "Info" "Web" "Removed existing PM2 startup configuration for $domain."
+fi
+
+# Generate and execute new PM2 startup script
 startup_script=$(sudo -u $user pm2 startup | grep "sudo")
 if [ -n "$startup_script" ]; then
-    eval "$startup_script"
-    echo "PM2 startup script executed successfully."
+    if eval "$startup_script"; then
+        $BIN/v-log-action "$user" "Info" "Web" "PM2 startup script executed successfully for $domain."
+    else
+        $BIN/v-log-action "$user" "Error" "Web" "Failed to execute PM2 startup script for $domain."
+        exit 1
+    fi
 else
-    echo "Failed to generate PM2 startup script."
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to generate PM2 startup script for $domain."
+    exit 1
 fi
 
 #----------------------------------------------------------#

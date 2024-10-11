@@ -50,6 +50,11 @@ class NodeJsSetup extends BaseSetup
         ],
     ];
 
+    /**
+     * Reads the existing environment variables from the .env file.
+     *
+     * @return array<string, string> An associative array of environment variables
+     */
     protected function readExistingEnv()
     {
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
