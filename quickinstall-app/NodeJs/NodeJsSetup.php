@@ -121,6 +121,13 @@ class NodeJsSetup extends BaseSetup
                     "label" => "Node Version",
                 ];
             }
+
+            // Add npm install button to the form
+            $this->config["form"]["npm_install"] = [
+                "type" => "checkbox",
+                "value" => "1",
+                "label" => "Run npm install after setup",
+            ];
         } else {
             // Proceed with the installation
             $this->createAppDir();
@@ -132,6 +139,16 @@ class NodeJsSetup extends BaseSetup
             $this->createAppProxyTemplates($options);
             $this->createAppConfig($options);
             $this->pm2StartApp();
+
+            // Check if npm install button was clicked
+            if (isset($options["npm_install"])) {
+                try {
+                    $result = $this->npmInstall();
+                    // You might want to add this result to a log or display it to the user
+                } catch (\Exception $e) {
+                    // Handle the exception, maybe log it or display an error message
+                }
+            }
         }
 
         return true;
@@ -233,6 +250,20 @@ class NodeJsSetup extends BaseSetup
             $tmpProxyFallbackFile,
             $this->nodeJsPaths->getAppProxyFallbackConfig($this->domain)
         );
+    }
+
+    public function npmInstall()
+    {
+        $appDir = $this->nodeJsPaths->getAppDir($this->domain);
+        $command = "cd $appDir && npm install";
+
+        $result = $this->appcontext->runUser("v-run-cmd", [$command]);
+
+        if ($result->code !== 0) {
+            throw new \Exception("Failed to run npm install: " . $result->text);
+        }
+
+        return "npm install completed successfully";
     }
 
     public function createAppConfig(array $options = null)
