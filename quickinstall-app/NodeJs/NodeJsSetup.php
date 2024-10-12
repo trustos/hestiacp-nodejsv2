@@ -117,7 +117,12 @@ class NodeJsSetup extends BaseSetup
             if (!isset($this->config["form"]["node_version"])) {
                 $this->config["form"]["node_version"] = [
                     "type" => "select",
-                    "options" => ["v22.9.0, v20.18.0", "v18.20.4", "v16.20.2"],
+                    "options" => [
+                        "v22.9.0",
+                        "v20.18.0",
+                        "v18.20.4",
+                        "v16.20.2",
+                    ],
                     "label" => "Node Version",
                 ];
             }
