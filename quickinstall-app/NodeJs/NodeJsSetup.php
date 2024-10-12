@@ -78,18 +78,22 @@ class NodeJsSetup extends BaseSetup
 
     protected function installNvm(array $options): void
     {
-        $nodeVersion = $options["node_version"] ?? "v20.18.0";
+        $nodeVersion = $options["node_version"] ?? "v16.20.2";
+        $user = $this->appcontext->getUser();
 
         $result = $this->appcontext->runUser("v-add-nvm-nodejs", [
+            $user,
             $nodeVersion,
         ]);
 
         if ($result->code !== 0) {
             $errorMessage = "Failed to install NVM or Node.js $nodeVersion. Error code: {$result->code}. ";
             $errorMessage .= "Output: " . ($result->text ?? "No output");
-            $errorMessage .=
-                " Log: " .
-                file_get_contents("/var/log/hestia/nvm_nodejs_install.log");
+
+            // Add Hestia log content
+            $hestiaLog = $this->getHestiaLogContent();
+            $errorMessage .= " Hestia Log: " . $hestiaLog;
+
             throw new \Exception($errorMessage);
         }
 
@@ -97,6 +101,17 @@ class NodeJsSetup extends BaseSetup
             "NVM and Node.js $nodeVersion installed and set as active",
             "INFO"
         );
+    }
+
+    private function getHestiaLogContent(): string
+    {
+        $logFile = "/var/log/hestia/auth.log";
+        if (file_exists($logFile)) {
+            // Get the last 20 lines of the log file
+            $logContent = shell_exec("tail -n 20 $logFile");
+            return $logContent ?: "Unable to read log file";
+        }
+        return "Log file not found";
     }
 
     public function __construct($domain, HestiaApp $appcontext)

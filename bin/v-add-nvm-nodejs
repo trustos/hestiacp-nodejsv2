@@ -29,9 +29,14 @@ check_hestia_demo_mode
 #                       Action                             #
 #----------------------------------------------------------#
 
-# Change to user's home directory
+# Get user's home directory
 user_dir=$($BIN/v-list-user $user plain | cut -f 2)
-cd $user_dir || exit 1
+
+# Ensure user directory is not empty
+if [ -z "$user_dir" ]; then
+    echo "Error: Unable to determine user's home directory"
+    exit 1
+fi
 
 # Install NVM if not already installed
 if [ ! -s "$user_dir/.nvm/nvm.sh" ]; then
