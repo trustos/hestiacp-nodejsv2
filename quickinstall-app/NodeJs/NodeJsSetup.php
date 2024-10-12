@@ -30,7 +30,7 @@ class NodeJsSetup extends BaseSetup
         "form" => [
             "node_version" => [
                 "type" => "select",
-                "options" => ["v22.9.0, v20.18.0", "v18.20.4", "v16.20.2"],
+                "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
             ],
             "start_script" => [
                 "type" => "text",
