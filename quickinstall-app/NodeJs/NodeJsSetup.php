@@ -31,6 +31,7 @@ class NodeJsSetup extends BaseSetup
             "node_version" => [
                 "type" => "select",
                 "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
+                "value" => "v20.18.0", // Add a default value
             ],
             "start_script" => [
                 "type" => "text",
@@ -117,91 +118,72 @@ class NodeJsSetup extends BaseSetup
 
     public function install(array $options = null)
     {
-        try {
-            $existingEnv = $this->readExistingEnv();
+        $existingEnv = $this->readExistingEnv();
 
-            if (empty($options)) {
-                // Dynamically add form fields for each .env variable
-                foreach ($existingEnv as $key => $value) {
-                    $this->config["form"][$key] = [
-                        "type" => "text",
-                        "value" => $value,
-                        "label" => $key,
-                    ];
-                }
-
-                // Ensure that required fields are always present
-                if (!isset($this->config["form"]["PORT"])) {
-                    $this->config["form"]["PORT"] = [
-                        "type" => "text",
-                        "placeholder" => "3000",
-                        "label" => "PORT",
-                    ];
-                }
-                if (!isset($this->config["form"]["start_script"])) {
-                    $this->config["form"]["start_script"] = [
-                        "type" => "text",
-                        "placeholder" => "npm run start",
-                        "label" => "Start Script",
-                    ];
-                }
-                if (!isset($this->config["form"]["node_version"])) {
-                    $this->config["form"]["node_version"] = [
-                        "type" => "select",
-                        "options" => [
-                            "v22.9.0",
-                            "v20.18.0",
-                            "v18.20.4",
-                            "v16.20.2",
-                        ],
-                        "label" => "Node Version",
-                    ];
-                }
-
-                // Add npm install button to the form
-                $this->config["form"]["npm_install"] = [
-                    "type" => "checkbox",
-                    "value" => "1",
-                    "label" => "Run npm install after setup",
+        if (empty($options)) {
+            // Dynamically add form fields for each .env variable
+            foreach ($existingEnv as $key => $value) {
+                $this->config["form"][$key] = [
+                    "type" => "text",
+                    "value" => $value,
+                    "label" => $key,
                 ];
-            } else {
-                // Proceed with the installation
-                $this->createAppDir();
-                $this->installNvm($options);
-                $this->createConfDir();
-                $this->createAppEntryPoint($options);
-                $this->createAppNvmVersion($options);
-                $this->createAppEnv($options);
-                $this->createPublicHtmlConfigFile();
-                $this->createAppProxyTemplates($options);
-                $this->createAppConfig($options);
-                $this->pm2StartApp();
-
-                // Check if npm install button was clicked
-                if (isset($options["npm_install"])) {
-                    try {
-                        $result = $this->npmInstall();
-                        $this->appcontext->log(
-                            "NPM Install: " . $result,
-                            "INFO"
-                        );
-                    } catch (\Exception $e) {
-                        $this->appcontext->log(
-                            "NPM Install Error: " . $e->getMessage(),
-                            "ERROR"
-                        );
-                    }
-                }
             }
 
-            return true;
-        } catch (\Exception $e) {
-            $this->appcontext->log(
-                "NodeJS Setup Error: " . $e->getMessage(),
-                "ERROR"
-            );
-            throw $e; // Re-throw the exception after logging
+            // Ensure that required fields are always present
+            if (!isset($this->config["form"]["PORT"])) {
+                $this->config["form"]["PORT"] = [
+                    "type" => "text",
+                    "placeholder" => "3000",
+                    "label" => "PORT",
+                ];
+            }
+            if (!isset($this->config["form"]["start_script"])) {
+                $this->config["form"]["start_script"] = [
+                    "type" => "text",
+                    "placeholder" => "npm run start",
+                    "label" => "Start Script",
+                ];
+            }
+            if (!isset($this->config["form"]["node_version"])) {
+                $this->config["form"]["node_version"] = [
+                    "type" => "select",
+                    "options" => [
+                        "v22.9.0",
+                        "v20.18.0",
+                        "v18.20.4",
+                        "v16.20.2",
+                    ],
+                    "label" => "Node Version",
+                ];
+            }
+
+            // Add npm install button to the form
+            $this->config["form"]["npm_install"] = [
+                "type" => "checkbox",
+                "value" => "1",
+                "label" => "Run npm install after setup",
+            ];
+        } else {
+            // Proceed with the installation
+            $this->createAppDir();
+            $this->installNvm($options);
+            $this->createConfDir();
+            $this->createAppEntryPoint($options);
+            $this->createAppNvmVersion($options);
+            $this->createAppEnv($options);
+            $this->createPublicHtmlConfigFile();
+            $this->createAppProxyTemplates($options);
+            $this->createAppConfig($options);
+            $this->pm2StartApp();
+
+            // Check if npm install button was clicked
+            if (isset($options["npm_install"])) {
+                $this->npmInstall();
+            }
         }
+
+        return true;
     }
 
     public function createAppEntryPoint(array $options = null)
