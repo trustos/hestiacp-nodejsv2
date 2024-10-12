@@ -78,22 +78,15 @@ class NodeJsSetup extends BaseSetup
 
     protected function installNvm(array $options): void
     {
-        $nodeVersion = $options["node_version"] ?? "v16.20.2";
-        $user = $this->appcontext->getUser();
+        $nodeVersion = $options["node_version"] ?? "v20.18.0";
 
         $result = $this->appcontext->runUser("v-add-nvm-nodejs", [
-            $user,
             $nodeVersion,
         ]);
 
         if ($result->code !== 0) {
             $errorMessage = "Failed to install NVM or Node.js $nodeVersion. Error code: {$result->code}. ";
             $errorMessage .= "Output: " . ($result->text ?? "No output");
-
-            // Add Hestia log content
-            $hestiaLog = $this->getHestiaLogContent();
-            $errorMessage .= " Hestia Log: " . $hestiaLog;
-
             throw new \Exception($errorMessage);
         }
 
@@ -128,7 +121,49 @@ class NodeJsSetup extends BaseSetup
             $existingEnv = $this->readExistingEnv();
 
             if (empty($options)) {
-                // ... (existing code for form display)
+                // Dynamically add form fields for each .env variable
+                foreach ($existingEnv as $key => $value) {
+                    $this->config["form"][$key] = [
+                        "type" => "text",
+                        "value" => $value,
+                        "label" => $key,
+                    ];
+                }
+
+                // Ensure that required fields are always present
+                if (!isset($this->config["form"]["PORT"])) {
+                    $this->config["form"]["PORT"] = [
+                        "type" => "text",
+                        "placeholder" => "3000",
+                        "label" => "PORT",
+                    ];
+                }
+                if (!isset($this->config["form"]["start_script"])) {
+                    $this->config["form"]["start_script"] = [
+                        "type" => "text",
+                        "placeholder" => "npm run start",
+                        "label" => "Start Script",
+                    ];
+                }
+                if (!isset($this->config["form"]["node_version"])) {
+                    $this->config["form"]["node_version"] = [
+                        "type" => "select",
+                        "options" => [
+                            "v22.9.0",
+                            "v20.18.0",
+                            "v18.20.4",
+                            "v16.20.2",
+                        ],
+                        "label" => "Node Version",
+                    ];
+                }
+
+                // Add npm install button to the form
+                $this->config["form"]["npm_install"] = [
+                    "type" => "checkbox",
+                    "value" => "1",
+                    "label" => "Run npm install after setup",
+                ];
             } else {
                 // Proceed with the installation
                 $this->createAppDir();
