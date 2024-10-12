@@ -40,7 +40,7 @@ fi
 
 # Install NVM if not already installed
 if [ ! -s "$user_dir/.nvm/nvm.sh" ]; then
-    su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash"
+    su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
     if [ $? -ne 0 ]; then
         echo "Error: Failed to install NVM"
         exit 1
