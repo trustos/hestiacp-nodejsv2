@@ -1,47 +1,60 @@
 #!/bin/bash
-# info: install nvm and nodejs
-# options: USER NODE_VERSION
-#
-# The script installs NVM and the specified Node.js version for a user
 
+#----------------------------------------------------------#
+#                    Variable&Function                     #
+#----------------------------------------------------------#
+
+# Argument definition
 user=$1
 node_version=$2
 
-# Log function
-log_message() {
-    echo "$(date): $1" >> /var/log/hestia/nvm_nodejs_install.log
-}
+# Includes
+source /etc/profile.d/hestia.sh
+source $HESTIA/func/main.sh
+source $HESTIA/conf/hestia.conf
 
-log_message "Starting installation for user $user, Node version $node_version"
+#----------------------------------------------------------#
+#                    Verifications                         #
+#----------------------------------------------------------#
 
-# Check if user exists
-if ! id "$user" &>/dev/null; then
-    log_message "Error: User $user does not exist"
-    echo "Error: User $user does not exist"
-    exit 1
-fi
+check_args '2' "$#" 'USER NODE_VERSION'
+is_format_valid 'user' 'node_version'
+is_object_valid 'user' 'USER' "$user"
+is_object_unsuspended 'user' 'USER' "$user"
+
+# Perform verification if read-only mode is enabled
+check_hestia_demo_mode
+
+#----------------------------------------------------------#
+#                       Action                             #
+#----------------------------------------------------------#
+
+# Change to user's home directory
+user_dir=$($BIN/v-list-user $user plain | cut -f 2)
+cd $user_dir || exit 1
 
 # Install NVM if not already installed
-if [ ! -s "/home/$user/.nvm/nvm.sh" ]; then
-    log_message "Installing NVM"
-    su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash" || {
-        log_message "Failed to install NVM"
-        echo "Failed to install NVM"
+if [ ! -s "$user_dir/.nvm/nvm.sh" ]; then
+    su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install NVM"
         exit 1
-    }
-    log_message "NVM installed successfully"
-else
-    log_message "NVM already installed"
+    fi
 fi
 
 # Install and use the specified Node.js version
-log_message "Installing Node.js $node_version"
-su - $user -c "source ~/.nvm/nvm.sh && nvm install $node_version && nvm use $node_version" || {
-    log_message "Failed to install or use Node.js $node_version"
-    echo "Failed to install or use Node.js $node_version"
+su - $user -c "source ~/.nvm/nvm.sh && nvm install $node_version && nvm use $node_version"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install or use Node.js $node_version"
     exit 1
-}
+fi
 
-log_message "Node.js $node_version installed and set as active"
-echo "Success: Node.js $node_version installed and set as active"
-exit 0
+#----------------------------------------------------------#
+#                       Hestia                             #
+#----------------------------------------------------------#
+
+# Logging
+$BIN/v-log-action "$user" "Info" "System" "Node.js $node_version installed and set as active."
+log_event "$OK" "$ARGUMENTS"
+
+exit
