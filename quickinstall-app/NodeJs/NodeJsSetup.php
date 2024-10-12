@@ -85,16 +85,18 @@ class NodeJsSetup extends BaseSetup
             $nodeVersion,
         ]);
 
-        if ($result->code !== 0) {
-            $errorMessage = "Failed to install NVM or Node.js $nodeVersion. Error code: {$result->code}. ";
-            $errorMessage .= "Output: " . ($result->text ?? "No output");
-            throw new \Exception($errorMessage);
+        if ($result === false) {
+            throw new \Exception(
+                "Failed to install NVM or Node.js $nodeVersion. The command execution failed."
+            );
         }
 
-        $this->appcontext->log(
-            "NVM and Node.js $nodeVersion installed and set as active",
-            "INFO"
-        );
+        // Assuming the command returns output as a string
+        if (is_string($result) && stripos($result, "error") !== false) {
+            throw new \Exception(
+                "Failed to install NVM or Node.js $nodeVersion. Error message: $result"
+            );
+        }
     }
 
     private function getHestiaLogContent(): string
@@ -291,11 +293,9 @@ class NodeJsSetup extends BaseSetup
 
         $result = $this->appcontext->runUser("v-run-cmd", [$command]);
 
-        if ($result->code !== 0) {
-            throw new \Exception("Failed to run npm install: " . $result->text);
+        if ($result === false || (is_object($result) && $result->code !== 0)) {
+            throw new \Exception("Failed to run npm install");
         }
-
-        return "npm install completed successfully";
     }
 
     public function createAppConfig(array $options = null)
