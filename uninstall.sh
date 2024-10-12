@@ -41,6 +41,8 @@ echo -e "${START} Removed Templates ✅"
 # Remove pm2 manager
 sudo rm /usr/local/hestia/bin/v-add-pm2-app || handle_error "Failed to remove v-add-pm2-app"
 echo -e "${START} Removed pm2 manager from /usr/local/hestia/bin ✅"
+sudo rm /usr/local/hestia/bin/v-add-nvm-nodejs || handle_error "Failed to remove v-add-nvm-nodejs"
+echo -e "${START} Removed nvm manager from /usr/local/hestia/bin ✅"
 
 echo -e "${GREEN}Uninstallation completed successfully!${ENDCOLOR}"
 echo -e "${YELLOW}Note: This script does not remove any Node.js applications or PM2 processes that may have been created.${ENDCOLOR}"

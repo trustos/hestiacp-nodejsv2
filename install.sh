@@ -54,6 +54,9 @@ echo -e "${START} Templates and QuickInstall App Permissions changed ✅"
 # Add pm2 manager
 sudo cp bin/v-add-pm2-app /usr/local/hestia/bin || handle_error "Failed to copy v-add-pm2-app"
 sudo chmod 755 /usr/local/hestia/bin/v-add-pm2-app || handle_error "Failed to change permissions for v-add-pm2-app"
+sudo cp bin/v-add-nvm-nodejs /usr/local/hestia/bin || handle_error "Failed to copy v-add-nvm-nodejs"
+sudo chmod 755 /usr/local/hestia/bin/v-add-nvm-nodejs || handle_error "Failed to change permissions for v-add-nvm-nodejs"
+
 echo -e "${START} Add pm2 manager to /usr/local/hestia/bin ✅"
 
 echo -e "${GREEN}Installation completed successfully!${ENDCOLOR}"

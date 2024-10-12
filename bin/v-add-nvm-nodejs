@@ -1,0 +1,18 @@
+#!/bin/bash
+# info: install nvm and nodejs
+# options: USER NODE_VERSION
+#
+# The script installs NVM and the specified Node.js version for a user
+
+user=$1
+node_version=$2
+
+# Install NVM if not already installed
+if [ ! -s "/home/$user/.nvm/nvm.sh" ]; then
+    su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash"
+fi
+
+# Install and use the specified Node.js version
+su - $user -c "source ~/.nvm/nvm.sh && nvm install $node_version && nvm use $node_version"
+
+exit 0

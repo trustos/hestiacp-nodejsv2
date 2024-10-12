@@ -76,70 +76,25 @@ class NodeJsSetup extends BaseSetup
         return $envContent;
     }
 
-    /**
-     * Install the NodeJS application.
-     *
-     * @param array|null $options Installation options
-     * @return bool True if installation was successful
-     * @throws \Exception If an error occurs during installation
-     */
     protected function installNvm(array $options): void
     {
-        $nodeVersion = $options["node_version"] ?? "v16.20.2"; // Default version if not specified
+        $nodeVersion = $options["node_version"] ?? "v20.18.0"; // Default version if not specified
 
-        // Check if NVM is already installed
-        $checkNvmCommand =
-            '[ -s "$HOME/.nvm/nvm.sh" ] && echo "installed" || echo "not installed"';
-        $result = $this->appcontext->runUser("v-run-cmd", [$checkNvmCommand]);
-
-        if ($result->code !== 0) {
-            throw new \Exception(
-                "Failed to check NVM installation: " . $result->text
-            );
-        }
-
-        if (trim($result->text) !== "installed") {
-            // Install NVM if not already installed
-            $nvmInstallCommand =
-                "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash";
-            $result = $this->appcontext->runUser("v-run-cmd", [
-                $nvmInstallCommand,
-            ]);
-
-            if ($result->code !== 0) {
-                throw new \Exception("Failed to install NVM: " . $result->text);
-            }
-
-            $this->appcontext->log("NVM installed successfully", "INFO");
-        } else {
-            $this->appcontext->log("NVM is already installed", "INFO");
-        }
-
-        // Source NVM, check if the version is installed, install if needed, and use it
-        $installAndUseNodeCommand = <<<EOT
-source ~/.nvm/nvm.sh
-if nvm ls $nodeVersion > /dev/null 2>&1; then
-    echo "Node.js $nodeVersion is already installed"
-else
-    nvm install $nodeVersion
-    echo "Node.js $nodeVersion installed"
-fi
-nvm use $nodeVersion
-EOT;
-
-        $result = $this->appcontext->runUser("v-run-cmd", [
-            $installAndUseNodeCommand,
+        $result = $this->appcontext->runUser("v-add-nvm-nodejs", [
+            $nodeVersion,
         ]);
 
         if ($result->code !== 0) {
             throw new \Exception(
-                "Failed to install or use Node.js $nodeVersion: " .
+                "Failed to install NVM or Node.js $nodeVersion: " .
                     $result->text
             );
         }
 
-        $this->appcontext->log($result->text, "INFO");
-        $this->appcontext->log("Node.js $nodeVersion set as active", "INFO");
+        $this->appcontext->log(
+            "NVM and Node.js $nodeVersion installed and set as active",
+            "INFO"
+        );
     }
 
     public function __construct($domain, HestiaApp $appcontext)
