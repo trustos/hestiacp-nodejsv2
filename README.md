@@ -34,14 +34,26 @@ When you create the app with the installer it automatically creates:
 * **ecosystem.config.js** with the necessary command to connect **pm2** and run your app Ex. `npm run start`
 * **.nvmrc** file with node version (NVM is required)
 
-## How to install
+
+## Requirements
+1. Install [PM2](https://pm2.keymetrics.io/) globally (recommended)
+  ```bash
+  npm install pm2 -g
+  ```
+
+## Quick Install
+
+```bash
+wget -qO- https://raw.githubusercontent.com/trustos/hestiacp-nodejsv2/refs/heads/main/quickinstall-ubuntu.sh | sudo bash
+```
+
+## Manual Install
 
 1. Install [NVM](https://github.com/nvm-sh/nvm#installing-and-updating)
-2. Install [PM2](https://pm2.keymetrics.io/)
-3. Clone this repository:
+2. Clone this repository:
 	```bash
 	cd ~/tmp
-	git clone https://github.com/[Your-Username]/hestiacp-nodejs-v2.git
+	git clone https://github.com/trustos/hestiacp-nodejs-v2.git
 	cd hestiacp-nodejs-v2
 	```
 

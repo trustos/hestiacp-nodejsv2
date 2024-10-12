@@ -78,17 +78,19 @@ class NodeJsSetup extends BaseSetup
 
     protected function installNvm(array $options): void
     {
-        $nodeVersion = $options["node_version"] ?? "v20.18.0"; // Default version if not specified
+        $nodeVersion = $options["node_version"] ?? "v20.18.0";
 
         $result = $this->appcontext->runUser("v-add-nvm-nodejs", [
             $nodeVersion,
         ]);
 
         if ($result->code !== 0) {
-            throw new \Exception(
-                "Failed to install NVM or Node.js $nodeVersion: " .
-                    $result->text
-            );
+            $errorMessage = "Failed to install NVM or Node.js $nodeVersion. Error code: {$result->code}. ";
+            $errorMessage .= "Output: " . ($result->text ?? "No output");
+            $errorMessage .=
+                " Log: " .
+                file_get_contents("/var/log/hestia/nvm_nodejs_install.log");
+            throw new \Exception($errorMessage);
         }
 
         $this->appcontext->log(
