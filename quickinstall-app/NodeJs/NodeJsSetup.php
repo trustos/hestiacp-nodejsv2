@@ -340,25 +340,35 @@ class NodeJsSetup extends BaseSetup
     protected function getCustomJs()
     {
         return <<<JS
-document.addEventListener('DOMContentLoaded', function() {
-    // Your JavaScript code here
-    console.log('Custom JS for NodeJs setup loaded');
+(function() {
+    function initNodeJsSetup() {
+        console.log('NodeJs setup script loaded');
 
-    // Example: Hide a field based on a condition
-    var npmInstallSelect = document.querySelector('select[name="npm_install"]');
-    var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
+        var npmInstallSelect = document.querySelector('select[name="npm_install"]');
+        var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
 
-    function toggleCustomEnvVars() {
-        if (npmInstallSelect.value === 'yes') {
-            customEnvVarsField.closest('.form-group').style.display = 'block';
+        if (npmInstallSelect && customEnvVarsField) {
+            function toggleCustomEnvVars() {
+                if (npmInstallSelect.value === 'yes') {
+                    customEnvVarsField.closest('.form-group').style.display = 'block';
+                } else {
+                    customEnvVarsField.closest('.form-group').style.display = 'none';
+                }
+            }
+
+            npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
+            toggleCustomEnvVars(); // Initial call to set correct visibility
         } else {
-            customEnvVarsField.closest('.form-group').style.display = 'none';
+            console.error('Required elements not found for NodeJs setup');
         }
     }
 
-    npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
-    toggleCustomEnvVars(); // Initial call to set correct visibility
-});
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNodeJsSetup);
+    } else {
+        initNodeJsSetup();
+    }
+})();
 JS;
     }
 
