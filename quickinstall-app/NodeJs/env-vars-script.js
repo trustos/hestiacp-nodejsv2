@@ -59,6 +59,10 @@ document.addEventListener("DOMContentLoaded", function () {
     addButton.appendChild(buttonText);
 
     addButton.onclick = function () {
+      if (envContainer.style.display === "none") {
+        envContainer.style.display = "block";
+        envHeader.querySelector("h4").innerHTML = "Environment Variables ▲";
+      }
       appendEnvRow(envContainer, "", "");
     };
 
