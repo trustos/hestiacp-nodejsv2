@@ -31,7 +31,7 @@ class NodeJsSetup extends BaseSetup
             "node_version" => [
                 "type" => "select",
                 "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
-                "value" => "v20.18.0", // Add a default value
+                "value" => "v20.18.0",
             ],
             "start_script" => [
                 "type" => "text",
@@ -63,11 +63,14 @@ class NodeJsSetup extends BaseSetup
         ],
     ];
 
-    /**
-     * Reads the existing environment variables from the .env file.
-     *
-     * @return array<string, string> An associative array of environment variables
-     */
+    public function __construct($domain, HestiaApp $appcontext)
+    {
+        parent::__construct($domain, $appcontext);
+
+        $this->nodeJsPaths = new NodeJsPaths($appcontext);
+        $this->nodeJsUtils = new NodeJsUtil($appcontext);
+    }
+
     protected function readExistingEnv()
     {
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
@@ -103,72 +106,11 @@ class NodeJsSetup extends BaseSetup
             );
         }
 
-        // Assuming the command returns output as a string
         if (is_string($result) && stripos($result, "error") !== false) {
             throw new \Exception(
                 "Failed to install NVM or Node.js $nodeVersion. Error message: $result"
             );
         }
-    }
-
-    private function getHestiaLogContent(): string
-    {
-        $logFile = "/var/log/hestia/auth.log";
-        if (file_exists($logFile)) {
-            // Get the last 20 lines of the log file
-            $logContent = shell_exec("tail -n 20 $logFile");
-            return $logContent ?: "Unable to read log file";
-        }
-        return "Log file not found";
-    }
-
-    public function __construct($domain, HestiaApp $appcontext)
-    {
-        parent::__construct($domain, $appcontext);
-
-        $this->nodeJsPaths = new NodeJsPaths($appcontext);
-        $this->nodeJsUtils = new NodeJsUtil($appcontext);
-
-        // Set up and inject the custom JavaScript
-        $this->injectCustomJs();
-    }
-
-    protected function injectCustomJs()
-    {
-        $existingEnv = json_encode($this->readExistingEnv());
-
-        $customJs = <<<JS
-(function() {
-    function initNodeJsSetup() {
-        console.log('NodeJs setup script loaded');
-        var existingEnv = {$existingEnv};
-
-        var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
-        if (customEnvVarsField) {
-            var envString = '';
-            for (var key in existingEnv) {
-                if (existingEnv.hasOwnProperty(key)) {
-                    envString += key + '=' + existingEnv[key] + '\\n';
-                }
-            }
-            customEnvVarsField.value = envString.trim();
-        } else {
-            console.error('Custom environment variables field not found');
-        }
-
-        // Rest of your JavaScript code...
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initNodeJsSetup);
-    } else {
-        initNodeJsSetup();
-    }
-})();
-JS;
-
-        // Inject the custom JavaScript into the form configuration
-        $this->config["form"]["__custom_js"] = $customJs;
     }
 
     public function install(array $options = null)
@@ -177,12 +119,6 @@ JS;
         error_log("Existing ENV vars: " . print_r($existingEnv, true));
 
         if (empty($options)) {
-            // Don't overwrite the custom JavaScript that was set in the constructor
-            if (!isset($this->config["form"]["__custom_js"])) {
-                $this->injectCustomJs();
-            }
-
-            // Set existing env vars to the custom_env_vars textarea
             if (!empty($existingEnv)) {
                 $envString = "";
                 foreach ($existingEnv as $key => $value) {
@@ -198,38 +134,10 @@ JS;
             );
             return $this->config["form"];
         } else {
-            // Proceed with the installation
             $this->performInstallation($options);
         }
 
         return true;
-    }
-
-    private function ensureRequiredFields()
-    {
-        $requiredFields = [
-            "PORT" => [
-                "type" => "text",
-                "placeholder" => "3000",
-                "label" => "PORT",
-            ],
-            "start_script" => [
-                "type" => "text",
-                "placeholder" => "npm run start",
-                "label" => "Start Script",
-            ],
-            "node_version" => [
-                "type" => "select",
-                "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
-                "label" => "Node Version",
-            ],
-        ];
-
-        foreach ($requiredFields as $key => $field) {
-            if (!isset($this->config["form"][$key])) {
-                $this->config["form"][$key] = $field;
-            }
-        }
     }
 
     private function performInstallation(array $options)
@@ -286,7 +194,6 @@ JS;
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
         $envContent = [];
 
-        // Process custom environment variables
         if (isset($options["custom_env_vars"])) {
             $lines = explode("\n", $options["custom_env_vars"]);
             foreach ($lines as $line) {
@@ -300,13 +207,12 @@ JS;
             }
         }
 
-        // Process other options
         foreach ($options as $key => $value) {
             if (
                 $key !== "node_version" &&
                 $key !== "start_script" &&
                 $key !== "php_version" &&
-                $key !== "custom_env_vars" // Exclude custom_env_vars as we've already processed it
+                $key !== "custom_env_vars"
             ) {
                 $envContent[$key] = $this->formatEnvValue($value);
             }
@@ -324,17 +230,14 @@ JS;
 
     private function formatEnvValue($value)
     {
-        // If the value is already quoted, return it as is
         if (preg_match('/^(["\']).*\1$/', $value)) {
             return $value;
         }
 
-        // If the value contains spaces or special characters, add quotes
         if (preg_match('/[\s\'"\\\\]/', $value)) {
             return '"' . str_replace('"', '\\"', $value) . '"';
         }
 
-        // Otherwise, return the value as is
         return $value;
     }
 
@@ -384,7 +287,6 @@ JS;
     {
         $configContent = [];
 
-        // Add standard configurations
         $configContent[] = "PORT=" . trim($options["PORT"] ?? "3000");
         $configContent[] =
             'START_SCRIPT="' .
@@ -393,17 +295,14 @@ JS;
         $configContent[] =
             "NODE_VERSION=" . trim($options["node_version"] ?? "v20.20.2");
 
-        // Add all other options from the form, excluding certain keys
         $excludeKeys = ["PORT", "start_script", "node_version", "npm_install"];
         foreach ($options as $key => $value) {
             if (!in_array($key, $excludeKeys)) {
-                // Format the value appropriately
                 $formattedValue = $this->formatConfigValue($value);
                 $configContent[] = strtoupper($key) . "=" . $formattedValue;
             }
         }
 
-        // Join all config entries
         $config = implode("|", $configContent);
 
         $file = $this->saveTempFile($config);
@@ -416,7 +315,6 @@ JS;
 
     private function formatConfigValue($value)
     {
-        // If the value contains spaces or special characters, add quotes
         if (preg_match('/[\s\'"\\\\]/', $value)) {
             return '"' . str_replace('"', '\\"', $value) . '"';
         }
@@ -425,7 +323,6 @@ JS;
 
     public function createPublicHtmlConfigFile()
     {
-        // This file is created for hestia to detect that there is an installed app when you try to install other app
         $this->appcontext->runUser("v-add-fs-file", [
             $this->getDocRoot("app.conf"),
         ]);
