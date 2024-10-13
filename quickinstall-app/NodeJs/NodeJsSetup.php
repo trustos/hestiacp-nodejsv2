@@ -128,6 +128,9 @@ class NodeJsSetup extends BaseSetup
 
         $this->nodeJsPaths = new NodeJsPaths($appcontext);
         $this->nodeJsUtils = new NodeJsUtil($appcontext);
+
+        // Inject custom JavaScript
+        echo "<script>" . $this->getCustomJs() . "</script>";
     }
 
     public function install(array $options = null)
@@ -146,9 +149,6 @@ class NodeJsSetup extends BaseSetup
                     $envString
                 );
             }
-
-            // Inject custom JavaScript
-            echo "<script>" . $this->getCustomJs() . "</script>";
 
             error_log(
                 "Final form config: " . print_r($this->config["form"], true)
