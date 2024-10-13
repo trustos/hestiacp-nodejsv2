@@ -340,13 +340,25 @@ class NodeJsSetup extends BaseSetup
     protected function getCustomJs()
     {
         return <<<JS
-(function() {
-    console.log('NodeJs setup script loaded');
-    document.body.style.border = '5px solid red';
-    alert('NodeJs setup script is running');
+document.addEventListener('DOMContentLoaded', function() {
+    // Your JavaScript code here
+    console.log('Custom JS for NodeJs setup loaded');
 
-    // Rest of your JavaScript code...
-})();
+    // Example: Hide a field based on a condition
+    var npmInstallSelect = document.querySelector('select[name="npm_install"]');
+    var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
+
+    function toggleCustomEnvVars() {
+        if (npmInstallSelect.value === 'yes') {
+            customEnvVarsField.closest('.form-group').style.display = 'block';
+        } else {
+            customEnvVarsField.closest('.form-group').style.display = 'none';
+        }
+    }
+
+    npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
+    toggleCustomEnvVars(); // Initial call to set correct visibility
+});
 JS;
     }
 
