@@ -15,12 +15,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
     envSection.className = "u-mb10";
-    envSection.innerHTML =
-      '<label id="env-vars-label" style="cursor: pointer;">Environment Variables ▼</label>';
+
+    // Create collapsible header
+    var envHeader = document.createElement("div");
+    envHeader.innerHTML =
+      '<h4 style="cursor: pointer;">Environment Variables ▼</h4>';
     envHeader.onclick = function () {
       envContainer.style.display =
         envContainer.style.display === "none" ? "block" : "none";
-      this.querySelector("#env-vars-label").innerHTML =
+      this.querySelector("h3").innerHTML =
         "Environment Variables " +
         (envContainer.style.display === "none" ? "▼" : "▲");
     };
