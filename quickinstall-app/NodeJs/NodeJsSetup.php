@@ -210,19 +210,14 @@ class NodeJsSetup extends BaseSetup
         $existingEnv = $this->readExistingEnv();
         $newEnvContent = [];
 
+        $newEnvContent["PORT"] = trim($options["port"]);
+
         // Parse the JSON string of environment variables
         $envVars = json_decode($options["env_vars"] ?? "{}", true);
 
         // Merge existing env with new options, preferring new options
         foreach ($envVars as $key => $value) {
             $newEnvContent[$key] = $this->formatEnvValue($value);
-        }
-
-        // Add any existing env variables that weren't in the new options
-        foreach ($existingEnv as $key => $value) {
-            if (!isset($newEnvContent[$key])) {
-                $newEnvContent[$key] = $value;
-            }
         }
 
         // Create the new .env content
