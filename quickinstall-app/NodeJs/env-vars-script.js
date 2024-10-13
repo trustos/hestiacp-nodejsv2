@@ -15,10 +15,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
     envSection.className = "u-mb10";
-    envSection.innerHTML = "<h3>Environment Variables</h3>";
+    envSection.innerHTML =
+      '<label id="env-vars-label" style="cursor: pointer;">Environment Variables ▼</label>';
+    envHeader.onclick = function () {
+      envContainer.style.display =
+        envContainer.style.display === "none" ? "block" : "none";
+      this.querySelector("#env-vars-label").innerHTML =
+        "Environment Variables " +
+        (envContainer.style.display === "none" ? "▼" : "▲");
+    };
+    envSection.appendChild(envHeader);
 
     var envContainer = document.createElement("div");
     envContainer.id = "env-variables-container";
+    envContainer.style.display = "none"; // Initially collapsed
 
     Object.keys(existingEnv).forEach(function (key) {
       if (key.toLowerCase() === "port") {
@@ -45,23 +55,23 @@ document.addEventListener("DOMContentLoaded", function () {
     form.querySelector(".form-container").appendChild(envSection);
 
     form.addEventListener("submit", function (event) {
-      // Gather all environment variables before submit
-      // var envVars = {};
-      // var rows = envContainer.querySelectorAll(".env-row");
-      // rows.forEach(function (row) {
-      //   var keyInput = row.querySelector(".env-key");
-      //   var valueInput = row.querySelector(".env-value");
-      //   if (keyInput.value) {
-      //     envVars[keyInput.value] = valueInput.value;
-      //   }
-      // });
+      // Gather all environment variables
+      var envVars = {};
+      var rows = envContainer.querySelectorAll(".env-row");
+      rows.forEach(function (row) {
+        var keyInput = row.querySelector(".env-key");
+        var valueInput = row.querySelector(".env-value");
+        if (keyInput.value) {
+          envVars[keyInput.value] = valueInput.value;
+        }
+      });
 
-      // // Add a hidden input to the form with all env vars
-      // var envInput = document.createElement("input");
-      // envInput.type = "hidden";
-      // envInput.name = "environment_variables";
-      // envInput.value = JSON.stringify(envVars);
-      // form.appendChild(envInput);
+      // Create a hidden input field to store all env vars
+      var hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = "webapp_env_vars";
+      hiddenInput.value = JSON.stringify(envVars);
+      form.appendChild(hiddenInput);
 
       console.log("Form submitted with env vars:", envVars);
     });
@@ -74,9 +84,9 @@ function appendEnvRow(container, key, value) {
   var row = document.createElement("div");
   row.className = "env-row u-mb10";
   row.innerHTML = `
-    <input type="text" class="form-control env-key" value="${key}" placeholder="Key" style="width: 45%; display: inline-block; margin-right: 5%;">
-    <input type="text" class="form-control env-value" value="${value}" placeholder="Value" style="width: 45%; display: inline-block;">
-    <button type="button" class="button button-danger" onclick="this.parentElement.remove()">Remove</button>
+    <input type="text" class="form-control env-key" value="${key}" placeholder="Key" style="width: 42%; display: inline-block; margin-right: 1%;">
+    <input type="text" class="form-control env-value" value="${value}" placeholder="Value" style="width: 42%; display: inline-block;">
+    <button type="button" class="button button-danger" onclick="this.parentElement.remove()" style="min-width: 1%;">Remove</button>
   `;
-  container.appendChild(row);
+  container.insertBefore(row, container.lastChild);
 }

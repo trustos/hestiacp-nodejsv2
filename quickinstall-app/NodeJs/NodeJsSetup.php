@@ -210,16 +210,12 @@ class NodeJsSetup extends BaseSetup
         $existingEnv = $this->readExistingEnv();
         $newEnvContent = [];
 
+        // Parse the JSON string of environment variables
+        $envVars = json_decode($options["webapp_env_vars"] ?? "{}", true);
+
         // Merge existing env with new options, preferring new options
-        foreach ($options as $key => $value) {
-            if (
-                $key !== "node_version" &&
-                $key !== "start_script" &&
-                $key !== "php_version" &&
-                $key !== "npm_install"
-            ) {
-                $newEnvContent[$key] = $this->formatEnvValue($value);
-            }
+        foreach ($envVars as $key => $value) {
+            $newEnvContent[$key] = $this->formatEnvValue($value);
         }
 
         // Add any existing env variables that weren't in the new options
@@ -242,29 +238,6 @@ class NodeJsSetup extends BaseSetup
         }
 
         return true; // Return true if no changes were needed
-
-        // $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
-        // $envContent = [];
-
-        // foreach ($options as $key => $value) {
-        //     if (
-        //         $key !== "node_version" &&
-        //         $key !== "start_script" &&
-        //         $key !== "php_version" &&
-        //         $key !== "npm_install"
-        //     ) {
-        //         $envContent[$key] = $this->formatEnvValue($value);
-        //     }
-        // }
-
-        // $newEnvContent = "";
-        // foreach ($envContent as $key => $value) {
-        //     $newEnvContent .= "$key=$value\n";
-        // }
-
-        // $tmpFile = $this->saveTempFile($newEnvContent);
-
-        // return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
     }
 
     private function formatEnvValue($value)
