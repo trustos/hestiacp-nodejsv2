@@ -147,8 +147,8 @@ class NodeJsSetup extends BaseSetup
                 );
             }
 
-            // Add custom JavaScript to the form
-            $this->config["form"]["__custom_js"] = $this->getCustomJs();
+            // Inject custom JavaScript
+            echo "<script>" . $this->getCustomJs() . "</script>";
 
             error_log(
                 "Final form config: " . print_r($this->config["form"], true)
@@ -340,25 +340,13 @@ class NodeJsSetup extends BaseSetup
     protected function getCustomJs()
     {
         return <<<JS
-document.addEventListener('DOMContentLoaded', function() {
-    // Your JavaScript code here
-    console.log('Custom JS for NodeJs setup loaded');
+(function() {
+    console.log('NodeJs setup script loaded');
+    document.body.style.border = '5px solid red';
+    alert('NodeJs setup script is running');
 
-    // Example: Hide a field based on a condition
-    var npmInstallSelect = document.querySelector('select[name="npm_install"]');
-    var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
-
-    function toggleCustomEnvVars() {
-        if (npmInstallSelect.value === 'yes') {
-            customEnvVarsField.closest('.form-group').style.display = 'block';
-        } else {
-            customEnvVarsField.closest('.form-group').style.display = 'none';
-        }
-    }
-
-    npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
-    toggleCustomEnvVars(); // Initial call to set correct visibility
-});
+    // Rest of your JavaScript code...
+})();
 JS;
     }
 
