@@ -62,11 +62,11 @@ class NodeJsSetup extends BaseSetup
         $envContent = [];
 
         if (file_exists($envPath)) {
-            $existingEnv = file(
+            $lines = file(
                 $envPath,
                 FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
             );
-            foreach ($existingEnv as $line) {
+            foreach ($lines as $line) {
                 if (strpos($line, "=") !== false) {
                     list($key, $value) = explode("=", $line, 2);
                     $envContent[trim($key)] = trim($value, " \t\n\r\0\x0B\"'");
