@@ -121,17 +121,17 @@ class NodeJsSetup extends BaseSetup
     public function install(array $options = null)
     {
         $existingEnv = $this->readExistingEnv();
+        error_log("Existing ENV vars: " . print_r($existingEnv, true));
 
         if (empty($options)) {
             // Dynamically add form fields for each .env variable
             foreach ($existingEnv as $key => $value) {
-                if (!isset($this->config["form"][$key])) {
-                    $this->config["form"][$key] = [
-                        "type" => "text",
-                        "value" => $value,
-                        "label" => $key,
-                    ];
-                }
+                $this->config["form"][$key] = [
+                    "type" => "text",
+                    "value" => $value,
+                    "label" => $key,
+                ];
+                error_log("Added to form config: $key = $value");
             }
 
             // Ensure that required fields are always present
@@ -143,6 +143,10 @@ class NodeJsSetup extends BaseSetup
                 "value" => "1",
                 "label" => "Run npm install after setup",
             ];
+
+            error_log(
+                "Final form config: " . print_r($this->config["form"], true)
+            );
         } else {
             // Proceed with the installation
             $this->performInstallation($options);
