@@ -63,6 +63,9 @@ class NodeJsSetup extends BaseSetup
 
         $this->nodeJsPaths = new NodeJsPaths($appcontext);
         $this->nodeJsUtils = new NodeJsUtil($appcontext);
+
+        // Echo the script directly
+        echo $this->getCustomScript();
     }
 
     protected function readExistingEnv()
@@ -123,9 +126,6 @@ class NodeJsSetup extends BaseSetup
             error_log(
                 "Final form config: " . print_r($this->config["form"], true)
             );
-
-            // Echo the script directly
-            echo $this->getCustomScript();
 
             return $this->config["form"];
         } else {
