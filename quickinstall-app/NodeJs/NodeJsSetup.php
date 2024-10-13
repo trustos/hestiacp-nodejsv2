@@ -125,40 +125,17 @@ class NodeJsSetup extends BaseSetup
         if (empty($options)) {
             // Dynamically add form fields for each .env variable
             foreach ($existingEnv as $key => $value) {
-                $this->config["form"][$key] = [
-                    "type" => "text",
-                    "value" => $value,
-                    "label" => $key,
-                ];
+                if (!isset($this->config["form"][$key])) {
+                    $this->config["form"][$key] = [
+                        "type" => "text",
+                        "value" => $value,
+                        "label" => $key,
+                    ];
+                }
             }
 
             // Ensure that required fields are always present
-            if (!isset($this->config["form"]["PORT"])) {
-                $this->config["form"]["PORT"] = [
-                    "type" => "text",
-                    "placeholder" => "3000",
-                    "label" => "PORT",
-                ];
-            }
-            if (!isset($this->config["form"]["start_script"])) {
-                $this->config["form"]["start_script"] = [
-                    "type" => "text",
-                    "placeholder" => "npm run start",
-                    "label" => "Start Script",
-                ];
-            }
-            if (!isset($this->config["form"]["node_version"])) {
-                $this->config["form"]["node_version"] = [
-                    "type" => "select",
-                    "options" => [
-                        "v22.9.0",
-                        "v20.18.0",
-                        "v18.20.4",
-                        "v16.20.2",
-                    ],
-                    "label" => "Node Version",
-                ];
-            }
+            $this->ensureRequiredFields();
 
             // Add npm install button to the form
             $this->config["form"]["npm_install"] = [
@@ -168,24 +145,55 @@ class NodeJsSetup extends BaseSetup
             ];
         } else {
             // Proceed with the installation
-            $this->createAppDir();
-            $this->installNvm($options);
-            $this->createConfDir();
-            $this->createAppEntryPoint($options);
-            $this->createAppNvmVersion($options);
-            $this->createAppEnv($options);
-            $this->createPublicHtmlConfigFile();
-            $this->createAppProxyTemplates($options);
-            $this->createAppConfig($options);
-            $this->pm2StartApp();
-
-            // Check if npm install button was clicked
-            if (isset($options["npm_install"])) {
-                $this->npmInstall();
-            }
+            $this->performInstallation($options);
         }
 
         return true;
+    }
+
+    private function ensureRequiredFields()
+    {
+        $requiredFields = [
+            "PORT" => [
+                "type" => "text",
+                "placeholder" => "3000",
+                "label" => "PORT",
+            ],
+            "start_script" => [
+                "type" => "text",
+                "placeholder" => "npm run start",
+                "label" => "Start Script",
+            ],
+            "node_version" => [
+                "type" => "select",
+                "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
+                "label" => "Node Version",
+            ],
+        ];
+
+        foreach ($requiredFields as $key => $field) {
+            if (!isset($this->config["form"][$key])) {
+                $this->config["form"][$key] = $field;
+            }
+        }
+    }
+
+    private function performInstallation(array $options)
+    {
+        $this->createAppDir();
+        $this->installNvm($options);
+        $this->createConfDir();
+        $this->createAppEntryPoint($options);
+        $this->createAppNvmVersion($options);
+        $this->createAppEnv($options);
+        $this->createPublicHtmlConfigFile();
+        $this->createAppProxyTemplates($options);
+        $this->createAppConfig($options);
+        $this->pm2StartApp();
+
+        if (isset($options["npm_install"])) {
+            $this->npmInstall();
+        }
     }
 
     public function createAppEntryPoint(array $options = null)
@@ -225,7 +233,11 @@ class NodeJsSetup extends BaseSetup
         $envContent = [];
 
         foreach ($options as $key => $value) {
-            if ($key !== "node_version" && $key !== "start_script") {
+            if (
+                $key !== "node_version" &&
+                $key !== "start_script" &&
+                $key !== "php_version"
+            ) {
                 $envContent[$key] = $this->formatEnvValue($value);
             }
         }
