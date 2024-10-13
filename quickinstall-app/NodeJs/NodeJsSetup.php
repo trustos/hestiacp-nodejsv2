@@ -223,7 +223,7 @@ class NodeJsSetup extends BaseSetup
         // Create the new .env content
         $envContentString = "";
         foreach ($newEnvContent as $key => $value) {
-            $envContentString .= "$key=$value\n";
+            $envContentString .= "$key=$this->formatEnvValue($value)\n";
         }
 
         // Only create a new file if there's content to write
