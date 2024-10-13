@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     envHeader.onclick = function () {
       envContainer.style.display =
         envContainer.style.display === "none" ? "block" : "none";
-      this.querySelector("h3").innerHTML =
+      this.querySelector("h4").innerHTML =
         "Environment Variables " +
         (envContainer.style.display === "none" ? "▼" : "▲");
     };
