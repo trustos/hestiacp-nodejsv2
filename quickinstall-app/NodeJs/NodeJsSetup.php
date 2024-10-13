@@ -42,6 +42,23 @@ class NodeJsSetup extends BaseSetup
                 "placeholder" => "3000",
                 "value" => "",
             ],
+            "custom_env_vars" => [
+                "type" => "dynamic",
+                "fields" => [
+                    "key" => [
+                        "type" => "text",
+                        "label" => "Variable Name",
+                        "placeholder" => "e.g., DATABASE_URL",
+                    ],
+                    "value" => [
+                        "type" => "text",
+                        "label" => "Value",
+                        "placeholder" => "e.g., mongodb://localhost:27017/mydb",
+                    ],
+                ],
+                "label" => "Custom Environment Variables",
+                "add_button_text" => "Add Environment Variable",
+            ],
         ],
         "database" => false,
         "server" => [
@@ -124,13 +141,15 @@ class NodeJsSetup extends BaseSetup
         error_log("Existing ENV vars: " . print_r($existingEnv, true));
 
         if (empty($options)) {
-            // Dynamically add form fields for each .env variable
+            // Dynamically add form fields for each existing .env variable
             foreach ($existingEnv as $key => $value) {
-                $this->config["form"][$key] = [
-                    "type" => "text",
-                    "value" => $value,
-                    "label" => $key,
-                ];
+                if (!isset($this->config["form"][$key])) {
+                    $this->config["form"][$key] = [
+                        "type" => "text",
+                        "value" => $value,
+                        "label" => $key,
+                    ];
+                }
                 error_log("Added to form config: $key = $value");
             }
 
@@ -148,6 +167,22 @@ class NodeJsSetup extends BaseSetup
                 "Final form config: " . print_r($this->config["form"], true)
             );
         } else {
+            // Process custom environment variables
+            if (
+                isset($options["custom_env_vars"]) &&
+                is_array($options["custom_env_vars"])
+            ) {
+                foreach ($options["custom_env_vars"] as $customVar) {
+                    if (
+                        !empty($customVar["key"]) &&
+                        !empty($customVar["value"])
+                    ) {
+                        $options[$customVar["key"]] = $customVar["value"];
+                    }
+                }
+                unset($options["custom_env_vars"]);
+            }
+
             // Proceed with the installation
             $this->performInstallation($options);
         }
