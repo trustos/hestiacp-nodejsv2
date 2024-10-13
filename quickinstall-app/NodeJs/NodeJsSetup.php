@@ -129,8 +129,46 @@ class NodeJsSetup extends BaseSetup
         $this->nodeJsPaths = new NodeJsPaths($appcontext);
         $this->nodeJsUtils = new NodeJsUtil($appcontext);
 
-        // Inject custom JavaScript
-        echo "<script>" . $this->getCustomJs() . "</script>";
+        // Set up and inject the custom JavaScript
+        $this->injectCustomJs();
+    }
+
+    protected function injectCustomJs()
+    {
+        $existingEnv = json_encode($this->readExistingEnv());
+
+        $customJs = <<<JS
+(function() {
+    function initNodeJsSetup() {
+        console.log('NodeJs setup script loaded');
+        var existingEnv = {$existingEnv};
+
+        var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
+        if (customEnvVarsField) {
+            var envString = '';
+            for (var key in existingEnv) {
+                if (existingEnv.hasOwnProperty(key)) {
+                    envString += key + '=' + existingEnv[key] + '\\n';
+                }
+            }
+            customEnvVarsField.value = envString.trim();
+        } else {
+            console.error('Custom environment variables field not found');
+        }
+
+        // Rest of your JavaScript code...
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNodeJsSetup);
+    } else {
+        initNodeJsSetup();
+    }
+})();
+JS;
+
+        // Inject the custom JavaScript into the form configuration
+        $this->config["form"]["__custom_js"] = $customJs;
     }
 
     public function install(array $options = null)
@@ -139,6 +177,11 @@ class NodeJsSetup extends BaseSetup
         error_log("Existing ENV vars: " . print_r($existingEnv, true));
 
         if (empty($options)) {
+            // Don't overwrite the custom JavaScript that was set in the constructor
+            if (!isset($this->config["form"]["__custom_js"])) {
+                $this->injectCustomJs();
+            }
+
             // Set existing env vars to the custom_env_vars textarea
             if (!empty($existingEnv)) {
                 $envString = "";
@@ -335,42 +378,6 @@ class NodeJsSetup extends BaseSetup
         if ($result === false || (is_object($result) && $result->code !== 0)) {
             throw new \Exception("Failed to run npm install");
         }
-    }
-
-    protected function getCustomJs()
-    {
-        return <<<JS
-(function() {
-    function initNodeJsSetup() {
-        console.log('NodeJs setup script loaded');
-        console.log(JSON.stringify($this->readExistingEnv()));
-
-        // var npmInstallSelect = document.querySelector('select[name="npm_install"]');
-        // var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
-
-        // if (npmInstallSelect && customEnvVarsField) {
-        //     function toggleCustomEnvVars() {
-        //         if (npmInstallSelect.value === 'yes') {
-        //             customEnvVarsField.closest('.form-group').style.display = 'block';
-        //         } else {
-        //             customEnvVarsField.closest('.form-group').style.display = 'none';
-        //         }
-        //     }
-
-        //     npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
-        //     toggleCustomEnvVars(); // Initial call to set correct visibility
-        // } else {
-        //     console.error('Required elements not found for NodeJs setup');
-        // }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initNodeJsSetup);
-    } else {
-        initNodeJsSetup();
-    }
-})();
-JS;
     }
 
     public function createAppConfig(array $options = null)
