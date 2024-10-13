@@ -31,7 +31,7 @@ class NodeJsSetup extends BaseSetup
             "node_version" => [
                 "type" => "select",
                 "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
-                "value" => "v20.18.0",
+                "value" => "v20.18.0", // Add a default value
             ],
             "start_script" => [
                 "type" => "text",
@@ -42,22 +42,16 @@ class NodeJsSetup extends BaseSetup
                 "placeholder" => "3000",
                 "value" => "",
             ],
-            "env_vars" => [
-                "type" => "dynamic",
-                "label" => "Environment Variables",
-                "fields" => [
-                    "key" => [
-                        "type" => "text",
-                        "label" => "Variable Name",
-                        "placeholder" => "e.g., DATABASE_URL",
-                    ],
-                    "value" => [
-                        "type" => "text",
-                        "label" => "Value",
-                        "placeholder" => "e.g., mongodb://localhost:27017/mydb",
-                    ],
-                ],
-                "add_button_text" => "Add Environment Variable",
+            "custom_env_vars" => [
+                "type" => "textarea",
+                "label" => "Custom Environment Variables",
+                "placeholder" => "KEY1=value1\nKEY2=value2\nKEY3=value3",
+                "description" => "Enter one KEY=value pair per line",
+            ],
+            "npm_install" => [
+                "type" => "checkbox",
+                "value" => "1",
+                "label" => "Run npm install after setup",
             ],
         ],
         "database" => false,
@@ -137,50 +131,31 @@ class NodeJsSetup extends BaseSetup
 
     public function install(array $options = null)
     {
+        $existingEnv = $this->readExistingEnv();
+        error_log("Existing ENV vars: " . print_r($existingEnv, true));
+
         if (empty($options)) {
-            $existingEnv = $this->readExistingEnv();
-
-            // Add existing env vars to the dynamic field
+            // Set existing env vars to the custom_env_vars textarea
             if (!empty($existingEnv)) {
-                $this->config["form"]["env_vars"]["value"] = [];
+                $envString = "";
                 foreach ($existingEnv as $key => $value) {
-                    $this->config["form"]["env_vars"]["value"][] = [
-                        "key" => $key,
-                        "value" => $value,
-                    ];
+                    $envString .= "$key=$value\n";
                 }
+                $this->config["form"]["custom_env_vars"]["value"] = rtrim(
+                    $envString
+                );
             }
 
-            return true; // Return the form config
+            error_log(
+                "Final form config: " . print_r($this->config["form"], true)
+            );
+            return $this->config["form"];
         } else {
-            // Process the submitted form
-            $envVars = [];
-            if (isset($options["env_vars"]) && is_array($options["env_vars"])) {
-                foreach ($options["env_vars"] as $env) {
-                    if (!empty($env["key"]) && isset($env["value"])) {
-                        $envVars[$env["key"]] = $env["value"];
-                    }
-                }
-            }
-
-            // Proceed with installation
-            $this->createAppDir();
-            $this->installNvm($options);
-            $this->createConfDir();
-            $this->createAppEntryPoint($options);
-            $this->createAppNvmVersion($options);
-            $this->createAppEnv($envVars);
-            $this->createPublicHtmlConfigFile();
-            $this->createAppProxyTemplates($options);
-            $this->createAppConfig($options);
-            $this->pm2StartApp();
-
-            if (isset($options["npm_install"]) && $options["npm_install"]) {
-                $this->npmInstall();
-            }
-
-            return true;
+            // Proceed with the installation
+            $this->performInstallation($options);
         }
+
+        return true;
     }
 
     private function ensureRequiredFields()
@@ -259,23 +234,43 @@ class NodeJsSetup extends BaseSetup
         );
     }
 
-    public function createAppEnv($envVars)
+    public function createAppEnv($options)
     {
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
-        $envContent = "";
+        $envContent = [];
 
-        foreach ($envVars as $key => $value) {
-            if (
-                $key !== "node_version" &&
-                $key !== "start_script" &&
-                $key !== "php_version"
-            ) {
-                $envContent .=
-                    $key . "=" . $this->formatEnvValue($value) . "\n";
+        // Process custom environment variables
+        if (isset($options["custom_env_vars"])) {
+            $lines = explode("\n", $options["custom_env_vars"]);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (strpos($line, "=") !== false) {
+                    list($key, $value) = explode("=", $line, 2);
+                    $key = trim($key);
+                    $value = trim($value);
+                    $envContent[$key] = $this->formatEnvValue($value);
+                }
             }
         }
 
-        $tmpFile = $this->saveTempFile($envContent);
+        // Process other options
+        foreach ($options as $key => $value) {
+            if (
+                $key !== "node_version" &&
+                $key !== "start_script" &&
+                $key !== "php_version" &&
+                $key !== "custom_env_vars" // Exclude custom_env_vars as we've already processed it
+            ) {
+                $envContent[$key] = $this->formatEnvValue($value);
+            }
+        }
+
+        $newEnvContent = "";
+        foreach ($envContent as $key => $value) {
+            $newEnvContent .= "$key=$value\n";
+        }
+
+        $tmpFile = $this->saveTempFile($newEnvContent);
 
         return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
     }
