@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     envSection.appendChild(addButton);
 
     // Append the entire section to the form
-    form.appendChild(envSection);
+    form.querySelector(".form-container").appendChild(envSection);
 
     form.addEventListener("submit", function (event) {
       // Gather all environment variables before submit
