@@ -154,7 +154,13 @@ class NodeJsSetup extends BaseSetup
         $this->pm2StartApp();
 
         if ($options["npm_install"] === "yes") {
-            $this->npmInstall();
+            $packageJsonPath =
+                $this->nodeJsPaths->getAppDir($this->domain) . "/package.json";
+            if (file_exists($packageJsonPath)) {
+                $this->npmInstall();
+            } else {
+                error_log("package.json not found. Skipping npm install.");
+            }
         }
     }
 
