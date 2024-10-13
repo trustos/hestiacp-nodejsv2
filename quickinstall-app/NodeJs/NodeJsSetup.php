@@ -211,7 +211,7 @@ class NodeJsSetup extends BaseSetup
         $newEnvContent = [];
 
         // Parse the JSON string of environment variables
-        $envVars = json_decode($options["webapp_env_vars"] ?? "{}", true);
+        $envVars = json_decode($options["env_vars"] ?? "{}", true);
 
         // Merge existing env with new options, preferring new options
         foreach ($envVars as $key => $value) {

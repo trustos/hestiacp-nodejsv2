@@ -82,9 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Create a hidden input field to store all env vars
       var hiddenInput = document.createElement("input");
-      hiddenInput.type = "hidden";
+      hiddenInput.type = "text";
       hiddenInput.name = "webapp_env_vars";
       hiddenInput.value = JSON.stringify(envVars);
+      hiddenInput.style.display = "none";
       form.appendChild(hiddenInput);
 
       console.log("Form submitted with env vars:", envVars);
@@ -105,5 +106,5 @@ function appendEnvRow(container, key, value) {
       Del
     </button>
   `;
-  container.insertBefore(row, container.lastChild);
+  container.appendChild(row);
 }
