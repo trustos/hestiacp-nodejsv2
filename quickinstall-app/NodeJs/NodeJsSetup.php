@@ -28,6 +28,16 @@ class NodeJsSetup extends BaseSetup
     protected $appname = "NodeJs";
     protected $config;
 
+    public function __construct($domain, HestiaApp $appcontext)
+    {
+        parent::__construct($domain, $appcontext);
+
+        $this->nodeJsPaths = new NodeJsPaths($appcontext);
+        $this->nodeJsUtils = new NodeJsUtil($appcontext);
+
+        $this->initConfig();
+    }
+
     private function initConfig()
     {
         $this->config = [
@@ -58,7 +68,7 @@ class NodeJsSetup extends BaseSetup
                     "label" => "Run npm install after setup",
                 ],
                 "custom_script" => [
-                    "type" => "label",
+                    "type" => "text",
                     "value" => $this->getCustomScript(),
                 ],
             ],
@@ -71,28 +81,31 @@ class NodeJsSetup extends BaseSetup
         ];
     }
 
-    public function __construct($domain, HestiaApp $appcontext)
-    {
-        parent::__construct($domain, $appcontext);
-
-        $this->nodeJsPaths = new NodeJsPaths($appcontext);
-        $this->nodeJsUtils = new NodeJsUtil($appcontext);
-
-        $this->initConfig();
-    }
-
     private function getCustomScript()
     {
-        return '<script>
-            document.addEventListener("DOMContentLoaded", function() {
-                console.log("NodeJs setup script loaded");
-                // Your custom JavaScript here
-                var form = document.querySelector("form");
-                form.addEventListener("submit", function(event) {
-                    // Custom form validation or manipulation
-                });
-            });
-            </script>';
+        $script = $this->getJavaScriptCode();
+        $encodedScript = base64_encode($script);
+        return '<input type="hidden" onload="(function(){eval(atob(\'' .
+            $encodedScript .
+            '\'))})();">';
+    }
+
+    private function getJavaScriptCode()
+    {
+        return "
+                    console.log('NodeJs setup script loaded');
+                    alert('NodeJs setup script is running');
+                    // Your custom JavaScript here
+                    var form = document.querySelector('form');
+                    if (form) {
+                        form.addEventListener('submit', function(event) {
+                            // Custom form validation or manipulation
+                            console.log('Form submitted');
+                        });
+                    } else {
+                        console.log('Form not found');
+                    }
+                ";
     }
 
     protected function readExistingEnv()
