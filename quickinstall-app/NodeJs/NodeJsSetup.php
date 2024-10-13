@@ -343,24 +343,25 @@ class NodeJsSetup extends BaseSetup
 (function() {
     function initNodeJsSetup() {
         console.log('NodeJs setup script loaded');
+        console.log($this->readExistingEnv());
 
-        var npmInstallSelect = document.querySelector('select[name="npm_install"]');
-        var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
+        // var npmInstallSelect = document.querySelector('select[name="npm_install"]');
+        // var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
 
-        if (npmInstallSelect && customEnvVarsField) {
-            function toggleCustomEnvVars() {
-                if (npmInstallSelect.value === 'yes') {
-                    customEnvVarsField.closest('.form-group').style.display = 'block';
-                } else {
-                    customEnvVarsField.closest('.form-group').style.display = 'none';
-                }
-            }
+        // if (npmInstallSelect && customEnvVarsField) {
+        //     function toggleCustomEnvVars() {
+        //         if (npmInstallSelect.value === 'yes') {
+        //             customEnvVarsField.closest('.form-group').style.display = 'block';
+        //         } else {
+        //             customEnvVarsField.closest('.form-group').style.display = 'none';
+        //         }
+        //     }
 
-            npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
-            toggleCustomEnvVars(); // Initial call to set correct visibility
-        } else {
-            console.error('Required elements not found for NodeJs setup');
-        }
+        //     npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
+        //     toggleCustomEnvVars(); // Initial call to set correct visibility
+        // } else {
+        //     console.error('Required elements not found for NodeJs setup');
+        // }
     }
 
     if (document.readyState === 'loading') {
