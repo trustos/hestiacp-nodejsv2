@@ -44,9 +44,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add a button to add new environment variables
     var addButton = document.createElement("button");
-    addButton.textContent = "Add Environment Variable";
     addButton.type = "button";
     addButton.className = "button";
+
+    // Create the icon element
+    var icon = document.createElement("i");
+    icon.className = "fas fa-plus icon-green";
+
+    // Create a text node for the button text
+    var buttonText = document.createTextNode(" Add Environment Variable");
+
+    // Append the icon and text to the button
+    addButton.appendChild(icon);
+    addButton.appendChild(buttonText);
+
     addButton.onclick = function () {
       appendEnvRow(envContainer, "", "");
     };
@@ -87,9 +98,12 @@ function appendEnvRow(container, key, value) {
   var row = document.createElement("div");
   row.className = "env-row u-mb10";
   row.innerHTML = `
-    <input type="text" class="form-control env-key" value="${key}" placeholder="Key" style="width: 42%; display: inline-block; margin-right: 1%;">
-    <input type="text" class="form-control env-value" value="${value}" placeholder="Value" style="width: 42%; display: inline-block;">
-    <button type="button" class="button button-danger" onclick="this.parentElement.remove()" style="min-width: 1%;">Remove</button>
+    <input type="text" class="form-control env-key" value="${key}" placeholder="Key" style="width: 40%; display: inline-block; margin-right: 1%;">
+    <input type="text" class="form-control env-value" value="${value}" placeholder="Value" style="width: 40%; display: inline-block;">
+    <button type="button" class="button button-danger" onclick="this.parentElement.remove()" style="min-width: 1%;">
+			<i class="fas fa-trash icon-red"></i>
+      Del
+    </button>
   `;
   container.insertBefore(row, container.lastChild);
 }
