@@ -207,7 +207,6 @@ class NodeJsSetup extends BaseSetup
     public function createAppEnv($options)
     {
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
-        $existingEnv = $this->readExistingEnv();
         $newEnvContent = [];
 
         $newEnvContent["PORT"] = trim($options["port"]);
@@ -223,8 +222,7 @@ class NodeJsSetup extends BaseSetup
         // Create the new .env content
         $envContentString = "";
         foreach ($newEnvContent as $key => $value) {
-            $val = $this->formatEnvValue($value);
-            $envContentString .= "$key=$val\n";
+            $envContentString .= "$key=$value\n";
         }
 
         // Only create a new file if there's content to write
@@ -238,11 +236,49 @@ class NodeJsSetup extends BaseSetup
 
     private function formatEnvValue($value)
     {
+        // If the value is already quoted, return it as is
         if (preg_match('/^(["\']).*\1$/', $value)) {
             return $value;
         }
 
-        if (preg_match('/[\s\'"\\\\]/', $value)) {
+        // List of characters that require quoting
+        $specialChars = [
+            "#",
+            "!",
+            '$',
+            "&",
+            "*",
+            "(",
+            ")",
+            "[",
+            "]",
+            "{",
+            "}",
+            "|",
+            ";",
+            "<",
+            ">",
+            "?",
+            "`",
+            " ",
+            '\t',
+            '\n',
+            "\\",
+            '"',
+            "'",
+        ];
+
+        // Check if the value contains any special characters
+        $needsQuoting = false;
+        foreach ($specialChars as $char) {
+            if (strpos($value, $char) !== false) {
+                $needsQuoting = true;
+                break;
+            }
+        }
+
+        if ($needsQuoting) {
+            // Escape any existing double quotes and wrap the value in double quotes
             return '"' . str_replace('"', '\\"', $value) . '"';
         }
 
