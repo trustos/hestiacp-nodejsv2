@@ -230,8 +230,10 @@ class NodeJsSetup extends BaseSetup
     public function createAppEnv($options)
     {
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
-        $envContent = [];
+        $existingEnv = $this->readExistingEnv();
+        $newEnvContent = [];
 
+        // Merge existing env with new options, preferring new options
         foreach ($options as $key => $value) {
             if (
                 $key !== "node_version" &&
@@ -239,18 +241,53 @@ class NodeJsSetup extends BaseSetup
                 $key !== "php_version" &&
                 $key !== "npm_install"
             ) {
-                $envContent[$key] = $this->formatEnvValue($value);
+                $newEnvContent[$key] = $this->formatEnvValue($value);
             }
         }
 
-        $newEnvContent = "";
-        foreach ($envContent as $key => $value) {
-            $newEnvContent .= "$key=$value\n";
+        // Add any existing env variables that weren't in the new options
+        foreach ($existingEnv as $key => $value) {
+            if (!isset($newEnvContent[$key])) {
+                $newEnvContent[$key] = $value;
+            }
         }
 
-        $tmpFile = $this->saveTempFile($newEnvContent);
+        // Create the new .env content
+        $envContentString = "";
+        foreach ($newEnvContent as $key => $value) {
+            $envContentString .= "$key=$value\n";
+        }
 
-        return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
+        // Only create a new file if there's content to write
+        if (!empty($envContentString)) {
+            $tmpFile = $this->saveTempFile($envContentString);
+            return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
+        }
+
+        return true; // Return true if no changes were needed
+
+        // $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
+        // $envContent = [];
+
+        // foreach ($options as $key => $value) {
+        //     if (
+        //         $key !== "node_version" &&
+        //         $key !== "start_script" &&
+        //         $key !== "php_version" &&
+        //         $key !== "npm_install"
+        //     ) {
+        //         $envContent[$key] = $this->formatEnvValue($value);
+        //     }
+        // }
+
+        // $newEnvContent = "";
+        // foreach ($envContent as $key => $value) {
+        //     $newEnvContent .= "$key=$value\n";
+        // }
+
+        // $tmpFile = $this->saveTempFile($newEnvContent);
+
+        // return $this->nodeJsUtils->moveFile($tmpFile, $envPath);
     }
 
     private function formatEnvValue($value)
