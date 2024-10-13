@@ -5,12 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
   var form = document.querySelector("form");
   if (form) {
     // Populate form fields with existing .env values
-    Object.keys(existingEnv).forEach(function (key) {
-      var input = form.querySelector('[name="webapp_' + key + '"]');
-      if (input) {
-        input.value = existingEnv[key];
-      }
-    });
+    // Object.keys(existingEnv).forEach(function (key) {
+    //   var input = form.querySelector('[name="webapp_' + key + '"]');
+    //   if (input) {
+    //     input.value = existingEnv[key];
+    //   }
+    // });
 
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
