@@ -147,6 +147,9 @@ class NodeJsSetup extends BaseSetup
                 );
             }
 
+            // Add custom JavaScript to the form
+            $this->config["form"]["__custom_js"] = $this->getCustomJs();
+
             error_log(
                 "Final form config: " . print_r($this->config["form"], true)
             );
@@ -334,6 +337,31 @@ class NodeJsSetup extends BaseSetup
         }
     }
 
+    protected function getCustomJs()
+    {
+        return <<<JS
+document.addEventListener('DOMContentLoaded', function() {
+    // Your JavaScript code here
+    console.log('Custom JS for NodeJs setup loaded');
+
+    // Example: Hide a field based on a condition
+    var npmInstallSelect = document.querySelector('select[name="npm_install"]');
+    var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
+
+    function toggleCustomEnvVars() {
+        if (npmInstallSelect.value === 'yes') {
+            customEnvVarsField.closest('.form-group').style.display = 'block';
+        } else {
+            customEnvVarsField.closest('.form-group').style.display = 'none';
+        }
+    }
+
+    npmInstallSelect.addEventListener('change', toggleCustomEnvVars);
+    toggleCustomEnvVars(); // Initial call to set correct visibility
+});
+JS;
+    }
+
     public function createAppConfig(array $options = null)
     {
         $configContent = [];
@@ -348,7 +376,7 @@ class NodeJsSetup extends BaseSetup
             "NODE_VERSION=" . trim($options["node_version"] ?? "v20.20.2");
 
         // Add all other options from the form, excluding certain keys
-        $excludeKeys = ["PORT", "start_script", "node_version"];
+        $excludeKeys = ["PORT", "start_script", "node_version", "npm_install"];
         foreach ($options as $key => $value) {
             if (!in_array($key, $excludeKeys)) {
                 // Format the value appropriately
