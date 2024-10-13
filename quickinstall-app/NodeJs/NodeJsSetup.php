@@ -140,36 +140,13 @@ class NodeJsSetup extends BaseSetup
         $existingEnv = $this->readExistingEnv();
         $envJson = json_encode($existingEnv);
 
-        return '<script>
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("NodeJs setup script loaded");
+        $scriptPath = __DIR__ . "/env-vars-script.js";
+        $scriptContent = file_get_contents($scriptPath);
 
-            // Load existing .env contents
-            var existingEnv = ' .
-            $envJson .
-            ';
-            console.log("Existing .env contents:", existingEnv);
-
-            // Your custom JavaScript here
-            var form = document.querySelector("form");
-            if (form) {
-                // Populate form fields with existing .env values
-                Object.keys(existingEnv).forEach(function(key) {
-                    var input = form.querySelector(\'[name="\' + key + \'"]\');
-                    if (input) {
-                        input.value = existingEnv[key];
-                    }
-                });
-
-                form.addEventListener("submit", function(event) {
-                    // Custom form validation or manipulation
-                    console.log("Form submitted");
-                });
-            } else {
-                console.log("Form not found");
-            }
-        });
-        </script>';
+        return "<script>
+                var existingEnv = {$envJson};
+                {$scriptContent}
+            </script>";
     }
 
     private function performInstallation(array $options)
