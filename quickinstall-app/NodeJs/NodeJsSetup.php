@@ -26,36 +26,50 @@ class NodeJsSetup extends BaseSetup
         "thumbnail" => "nodejs.png",
     ];
     protected $appname = "NodeJs";
-    protected $config = [
-        "form" => [
-            "node_version" => [
-                "type" => "select",
-                "options" => ["v22.9.0", "v20.18.0", "v18.20.4", "v16.20.2"],
-                "value" => "v20.18.0",
+    protected $config;
+
+    private function initConfig()
+    {
+        $this->config = [
+            "form" => [
+                "node_version" => [
+                    "type" => "select",
+                    "options" => [
+                        "v22.9.0",
+                        "v20.18.0",
+                        "v18.20.4",
+                        "v16.20.2",
+                    ],
+                    "value" => "v20.18.0",
+                ],
+                "start_script" => [
+                    "type" => "text",
+                    "placeholder" => "npm run start",
+                ],
+                "port" => [
+                    "type" => "text",
+                    "placeholder" => "3000",
+                    "value" => "",
+                ],
+                "npm_install" => [
+                    "type" => "select",
+                    "options" => ["no", "yes"],
+                    "value" => "no",
+                    "label" => "Run npm install after setup",
+                ],
+                "custom_script" => [
+                    "type" => "label",
+                    "value" => $this->getCustomScript(),
+                ],
             ],
-            "start_script" => [
-                "type" => "text",
-                "placeholder" => "npm run start",
+            "database" => false,
+            "server" => [
+                "php" => [
+                    "supported" => ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2"],
+                ],
             ],
-            "port" => [
-                "type" => "text",
-                "placeholder" => "3000",
-                "value" => "",
-            ],
-            "npm_install" => [
-                "type" => "select",
-                "options" => ["no", "yes"],
-                "value" => "no",
-                "label" => "Run npm install after setup",
-            ],
-        ],
-        "database" => false,
-        "server" => [
-            "php" => [
-                "supported" => ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2"],
-            ],
-        ],
-    ];
+        ];
+    }
 
     public function __construct($domain, HestiaApp $appcontext)
     {
@@ -63,6 +77,22 @@ class NodeJsSetup extends BaseSetup
 
         $this->nodeJsPaths = new NodeJsPaths($appcontext);
         $this->nodeJsUtils = new NodeJsUtil($appcontext);
+
+        $this->initConfig();
+    }
+
+    private function getCustomScript()
+    {
+        return '<script>
+            document.addEventListener("DOMContentLoaded", function() {
+                console.log("NodeJs setup script loaded");
+                // Your custom JavaScript here
+                var form = document.querySelector("form");
+                form.addEventListener("submit", function(event) {
+                    // Custom form validation or manipulation
+                });
+            });
+            </script>';
     }
 
     protected function readExistingEnv()
