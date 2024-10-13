@@ -56,6 +56,8 @@ sudo cp bin/v-add-pm2-app /usr/local/hestia/bin || handle_error "Failed to copy 
 sudo chmod 755 /usr/local/hestia/bin/v-add-pm2-app || handle_error "Failed to change permissions for v-add-pm2-app"
 sudo cp bin/v-add-nvm-nodejs /usr/local/hestia/bin || handle_error "Failed to copy v-add-nvm-nodejs"
 sudo chmod 755 /usr/local/hestia/bin/v-add-nvm-nodejs || handle_error "Failed to change permissions for v-add-nvm-nodejs"
+sudo cp bin/v-add-npm-install /usr/local/hestia/bin || handle_error "Failed to copy v-add-npm-install"
+sudo chmod 755 /usr/local/hestia/bin/v-add-npm-install || handle_error "Failed to change permissions for v-add-npm-install"
 
 echo -e "${START} Add pm2 manager to /usr/local/hestia/bin ✅"
 

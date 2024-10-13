@@ -212,7 +212,8 @@ class NodeJsSetup extends BaseSetup
                 $key !== "node_version" &&
                 $key !== "start_script" &&
                 $key !== "php_version" &&
-                $key !== "custom_env_vars"
+                $key !== "custom_env_vars" &&
+                $key !== "npm_install"
             ) {
                 $envContent[$key] = $this->formatEnvValue($value);
             }
@@ -273,10 +274,10 @@ class NodeJsSetup extends BaseSetup
 
     public function npmInstall()
     {
-        $appDir = $this->nodeJsPaths->getAppDir($this->domain);
-        $command = "cd $appDir && npm install";
-
-        $result = $this->appcontext->runUser("v-run-cmd", [$command]);
+        $result = $this->appcontext->runUser("v-add-npm-install", [
+            $this->appcontext->user,
+            $this->domain,
+        ]);
 
         if ($result === false || (is_object($result) && $result->code !== 0)) {
             throw new \Exception("Failed to run npm install");

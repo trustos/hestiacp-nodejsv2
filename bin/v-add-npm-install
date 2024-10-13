@@ -1,0 +1,73 @@
+#!/bin/bash
+# info: run npm install for NodeJS application
+# options: USER DOMAIN
+#
+# example: v-run-npm-install admin wonderland.com
+#
+# This function runs npm install for a NodeJS application
+#----------------------------------------------------------#
+#                Variables & Functions                     #
+#----------------------------------------------------------#
+
+# Argument definition
+user=$1
+domain=$2
+
+# Includes
+# shellcheck source=/etc/hestiacp/hestia.conf
+source /etc/hestiacp/hestia.conf
+# shellcheck source=/usr/local/hestia/func/main.sh
+source $HESTIA/func/main.sh
+# shellcheck source=/usr/local/hestia/func/domain.sh
+source $HESTIA/func/domain.sh
+# load config file
+source_conf "$HESTIA/conf/hestia.conf"
+
+# Additional argument formatting
+format_domain
+
+#----------------------------------------------------------#
+#                    Verifications                         #
+#----------------------------------------------------------#
+
+check_args '2' "$#" 'USER DOMAIN'
+is_format_valid 'user' 'domain'
+is_object_valid 'user' 'USER' "$user"
+is_object_unsuspended 'user' 'USER' "$user"
+
+is_dir_symlink "$HOMEDIR/$user/web"
+is_dir_symlink "$HOMEDIR/$user/web/$domain"
+
+is_base_domain_owner "$domain"
+
+# Perform verification if read-only mode is enabled
+check_hestia_demo_mode
+
+#----------------------------------------------------------#
+#                       Action                             #
+#----------------------------------------------------------#
+
+# Change to the application directory
+app_dir="$HOMEDIR/$user/web/$domain/private/nodeapp"
+if [ ! -d "$app_dir" ]; then
+    $BIN/v-log-action "$user" "Error" "Web" "NodeJS application directory not found for $domain."
+    exit 1
+fi
+
+# Run npm install
+if sudo -u $user bash -c "cd $app_dir && npm install"; then
+    $BIN/v-log-action "$user" "Info" "Web" "Successfully ran npm install for $domain."
+else
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to run npm install for $domain."
+    exit 1
+fi
+
+#----------------------------------------------------------#
+#                       Hestia                             #
+#----------------------------------------------------------#
+
+# Logging
+$BIN/v-log-action "$user" "Info" "Web" "Ran npm install for NodeJS application (Domain: $domain)."
+log_event "$OK" "$ARGUMENTS"
+
+exit
