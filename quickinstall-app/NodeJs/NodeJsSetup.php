@@ -49,8 +49,9 @@ class NodeJsSetup extends BaseSetup
                 "description" => "Enter one KEY=value pair per line",
             ],
             "npm_install" => [
-                "type" => "checkbox",
-                "value" => "1",
+                "type" => "select",
+                "options" => ["no", "yes"],
+                "value" => "no",
                 "label" => "Run npm install after setup",
             ],
         ],
@@ -198,7 +199,7 @@ class NodeJsSetup extends BaseSetup
         $this->createAppConfig($options);
         $this->pm2StartApp();
 
-        if (isset($options["npm_install"])) {
+        if ($options["npm_install"] === "yes") {
             $this->npmInstall();
         }
     }
