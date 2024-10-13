@@ -343,7 +343,7 @@ class NodeJsSetup extends BaseSetup
 (function() {
     function initNodeJsSetup() {
         console.log('NodeJs setup script loaded');
-        console.log($this->readExistingEnv());
+        console.log(JSON.stringify($this->readExistingEnv()));
 
         // var npmInstallSelect = document.querySelector('select[name="npm_install"]');
         // var customEnvVarsField = document.querySelector('textarea[name="custom_env_vars"]');
