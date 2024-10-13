@@ -54,9 +54,27 @@ if [ ! -d "$app_dir" ]; then
     exit 1
 fi
 
+# Source NVM for the user
+export NVM_DIR="$HOMEDIR/$user/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Read the .nvmrc file to get the Node.js version
+if [ -f "$app_dir/.nvmrc" ]; then
+    node_version=$(cat "$app_dir/.nvmrc")
+else
+    $BIN/v-log-action "$user" "Error" "Web" ".nvmrc file not found for $domain."
+    exit 1
+fi
+
+# Use the specified Node.js version
+if ! nvm use "$node_version"; then
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to switch to Node.js version $node_version for $domain."
+    exit 1
+fi
+
 # Run npm install
 if sudo -u $user bash -c "cd $app_dir && npm install"; then
-    $BIN/v-log-action "$user" "Info" "Web" "Successfully ran npm install for $domain."
+    $BIN/v-log-action "$user" "Info" "Web" "Successfully ran npm install for $domain using Node.js $node_version."
 else
     $BIN/v-log-action "$user" "Error" "Web" "Failed to run npm install for $domain."
     exit 1
@@ -67,7 +85,7 @@ fi
 #----------------------------------------------------------#
 
 # Logging
-$BIN/v-log-action "$user" "Info" "Web" "Ran npm install for NodeJS application (Domain: $domain)."
+$BIN/v-log-action "$user" "Info" "Web" "Ran npm install for NodeJS application (Domain: $domain, Node.js: $node_version)."
 log_event "$OK" "$ARGUMENTS"
 
 exit

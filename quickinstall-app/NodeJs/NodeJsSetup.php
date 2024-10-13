@@ -42,12 +42,6 @@ class NodeJsSetup extends BaseSetup
                 "placeholder" => "3000",
                 "value" => "",
             ],
-            "custom_env_vars" => [
-                "type" => "textarea",
-                "label" => "Custom Environment Variables",
-                "placeholder" => "KEY1=value1\nKEY2=value2\nKEY3=value3",
-                "description" => "Enter one KEY=value pair per line",
-            ],
             "npm_install" => [
                 "type" => "select",
                 "options" => ["no", "yes"],
@@ -124,9 +118,6 @@ class NodeJsSetup extends BaseSetup
                 foreach ($existingEnv as $key => $value) {
                     $envString .= "$key=$value\n";
                 }
-                $this->config["form"]["custom_env_vars"]["value"] = rtrim(
-                    $envString
-                );
             }
 
             error_log(
@@ -200,25 +191,11 @@ class NodeJsSetup extends BaseSetup
         $envPath = $this->nodeJsPaths->getAppDir($this->domain, ".env");
         $envContent = [];
 
-        if (isset($options["custom_env_vars"])) {
-            $lines = explode("\n", $options["custom_env_vars"]);
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if (strpos($line, "=") !== false) {
-                    list($key, $value) = explode("=", $line, 2);
-                    $key = trim($key);
-                    $value = trim($value);
-                    $envContent[$key] = $this->formatEnvValue($value);
-                }
-            }
-        }
-
         foreach ($options as $key => $value) {
             if (
                 $key !== "node_version" &&
                 $key !== "start_script" &&
                 $key !== "php_version" &&
-                $key !== "custom_env_vars" &&
                 $key !== "npm_install"
             ) {
                 $envContent[$key] = $this->formatEnvValue($value);
