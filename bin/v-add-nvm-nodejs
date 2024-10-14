@@ -34,7 +34,7 @@ user_dir=$($BIN/v-list-user $user plain | cut -f 2)
 
 # Ensure user directory is not empty
 if [ -z "$user_dir" ]; then
-    echo "Error: Unable to determine user's home directory"
+    $BIN/v-log-action "$user" "Error" "System" "Unable to determine user's home directory."
     exit 1
 fi
 
@@ -42,7 +42,7 @@ fi
 if [ ! -s "$user_dir/.nvm/nvm.sh" ]; then
     su - $user -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to install NVM"
+        $BIN/v-log-action "$user" "Error" "System" "Failed to install NVM."
         exit 1
     fi
 fi
@@ -50,7 +50,7 @@ fi
 # Install and use the specified Node.js version
 su - $user -c "source ~/.nvm/nvm.sh && nvm install $node_version && nvm use $node_version"
 if [ $? -ne 0 ]; then
-    echo "Error: Failed to install or use Node.js $node_version"
+    $BIN/v-log-action "$user" "Error" "System" "Failed to install or use Node.js $node_version."
     exit 1
 fi
 
