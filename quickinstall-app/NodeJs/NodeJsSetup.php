@@ -163,26 +163,28 @@ class NodeJsSetup extends BaseSetup
         $this->createAppEntryPoint($options);
         $this->createAppNvmVersion($options);
         $this->createAppEnv($options);
+        $this->npmInstall($options);
         $this->createPublicHtmlConfigFile();
         $this->createAppProxyTemplates($options);
         $this->createAppConfig($options);
         $this->pm2StartApp($options);
 
-        if ($options["npm_install"] === "yes") {
-            $packageJsonPath =
-                $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
+        // if ($options["npm_install"] === "yes") {
+        //     $packageJsonPath =
+        //         $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
 
-            $packageLockJsonPath =
-                $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
-            if (
-                file_exists($packageJsonPath) ||
-                file_exists($packageLockJsonPath)
-            ) {
-                $this->npmInstall();
-            } else {
-                error_log("package.json not found. Skipping npm install.");
-            }
-        }
+        //     $packageLockJsonPath =
+        //         $this->nodeJsPaths->getAppDir($this->domain) .
+        //         "package-lock.json";
+        //     if (
+        //         file_exists($packageJsonPath) ||
+        //         file_exists($packageLockJsonPath)
+        //     ) {
+        //         $this->npmInstall();
+        //     } else {
+        //         error_log("package.json not found. Skipping npm install.");
+        //     }
+        // }
     }
 
     public function createAppEntryPoint(array $options = null)
@@ -330,15 +332,35 @@ class NodeJsSetup extends BaseSetup
         );
     }
 
-    public function npmInstall()
+    public function npmInstall(array $options)
     {
-        $result = $this->appcontext->runUser("v-add-npm-install", [
-            $this->appcontext->user,
-            $this->domain,
-        ]);
+        if ($options["npm_install"] === "yes") {
+            $packageJsonPath =
+                $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
+            $packageLockJsonPath =
+                $this->nodeJsPaths->getAppDir($this->domain) .
+                "package-lock.json";
 
-        if ($result === false || (is_object($result) && $result->code !== 0)) {
-            throw new \Exception("Failed to run npm install");
+            if (
+                file_exists($packageJsonPath) ||
+                file_exists($packageLockJsonPath)
+            ) {
+                $result = $this->appcontext->runUser("v-add-npm-install", [
+                    $this->appcontext->user,
+                    $this->domain,
+                ]);
+
+                if (
+                    $result === false ||
+                    (is_object($result) && $result->code !== 0)
+                ) {
+                    throw new \Exception("Failed to run npm install");
+                }
+            } else {
+                error_log(
+                    "package.json or package-lock.json not found. Skipping npm install."
+                );
+            }
         }
     }
 
