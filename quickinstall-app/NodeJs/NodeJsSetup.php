@@ -335,25 +335,29 @@ class NodeJsSetup extends BaseSetup
     public function npmInstall(array $options)
     {
         if ($options["npm_install"] === "yes") {
-            $packageJsonPath =
-                $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
-            $packageLockJsonPath =
-                $this->nodeJsPaths->getAppDir($this->domain) .
-                "package-lock.json";
+            $this->appcontext->runUser("v-add-npm-install", [
+                $this->appcontext->user,
+                $this->domain,
+            ]);
+            // $packageJsonPath =
+            //     $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
+            // $packageLockJsonPath =
+            //     $this->nodeJsPaths->getAppDir($this->domain) .
+            //     "package-lock.json";
 
-            if (
-                file_exists($packageJsonPath) ||
-                file_exists($packageLockJsonPath)
-            ) {
-                $this->appcontext->runUser("v-add-npm-install", [
-                    $this->appcontext->user,
-                    $this->domain,
-                ]);
-            } else {
-                error_log(
-                    "package.json or package-lock.json not found. Skipping npm install."
-                );
-            }
+            // if (
+            //     file_exists($packageJsonPath) ||
+            //     file_exists($packageLockJsonPath)
+            // ) {
+            //     $this->appcontext->runUser("v-add-npm-install", [
+            //         $this->appcontext->user,
+            //         $this->domain,
+            //     ]);
+            // } else {
+            //     error_log(
+            //         "package.json or package-lock.json not found. Skipping npm install."
+            //     );
+            // }
         }
     }
 
