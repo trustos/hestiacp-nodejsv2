@@ -157,17 +157,28 @@ class NodeJsSetup extends BaseSetup
 
     private function performInstallation(array $options)
     {
-        $this->createAppDir();
-        $this->installNvm($options);
-        $this->createConfDir();
-        $this->createAppEntryPoint($options);
-        $this->createAppNvmVersion($options);
-        $this->createAppEnv($options);
-        $this->createPublicHtmlConfigFile();
-        $this->createAppProxyTemplates($options);
-        $this->createAppConfig($options);
-        $this->npmInstall($options);
-        $this->pm2StartApp($options);
+        try {
+            $this->createAppDir();
+            $this->installNvm($options);
+            $this->createConfDir();
+            $this->createAppEntryPoint($options);
+            $this->createAppNvmVersion($options);
+            $this->createAppEnv($options);
+            $this->createPublicHtmlConfigFile();
+            $this->createAppProxyTemplates($options);
+            $this->createAppConfig($options);
+            $this->npmInstall($options);
+            $this->pm2StartApp($options);
+        } catch (\Exception $e) {
+            $this->appcontext->runUser("v-log-action", [
+                $this->appcontext->user,
+                "Error",
+                "Web",
+                "Failed to perform NodeJS installation for {$this->domain}: " .
+                $e->getMessage(),
+            ]);
+            throw $e;
+        }
 
         // if ($options["npm_install"] === "yes") {
         //     $packageJsonPath =
