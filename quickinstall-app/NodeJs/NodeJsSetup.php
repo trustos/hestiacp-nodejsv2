@@ -163,10 +163,10 @@ class NodeJsSetup extends BaseSetup
         $this->createAppEntryPoint($options);
         $this->createAppNvmVersion($options);
         $this->createAppEnv($options);
-        $this->npmInstall($options);
         $this->createPublicHtmlConfigFile();
         $this->createAppProxyTemplates($options);
         $this->createAppConfig($options);
+        $this->npmInstall($options);
         $this->pm2StartApp($options);
 
         // if ($options["npm_install"] === "yes") {
@@ -332,7 +332,7 @@ class NodeJsSetup extends BaseSetup
         );
     }
 
-    public function npmInstall(array $options)
+    public function npmInstall(array $options = null)
     {
         if ($options["npm_install"] === "yes") {
             $this->appcontext->runUser("v-add-npm-install", [
