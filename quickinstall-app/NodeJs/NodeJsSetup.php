@@ -345,17 +345,10 @@ class NodeJsSetup extends BaseSetup
                 file_exists($packageJsonPath) ||
                 file_exists($packageLockJsonPath)
             ) {
-                $result = $this->appcontext->runUser("v-add-npm-install", [
+                $this->appcontext->runUser("v-add-npm-install", [
                     $this->appcontext->user,
                     $this->domain,
                 ]);
-
-                if (
-                    $result === false ||
-                    (is_object($result) && $result->code !== 0)
-                ) {
-                    throw new \Exception("Failed to run npm install");
-                }
             } else {
                 error_log(
                     "package.json or package-lock.json not found. Skipping npm install."
