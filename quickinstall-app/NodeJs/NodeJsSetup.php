@@ -42,6 +42,12 @@ class NodeJsSetup extends BaseSetup
                 "placeholder" => "3000",
                 "value" => "",
             ],
+            "modules_type" => [
+                "type" => "select",
+                "options" => ["ES Modules", "CommonJS"],
+                "value" => "ES Modules",
+                "label" => "Modules type",
+            ],
             "npm_install" => [
                 "type" => "select",
                 "options" => ["no", "yes"],
@@ -160,7 +166,7 @@ class NodeJsSetup extends BaseSetup
         $this->createPublicHtmlConfigFile();
         $this->createAppProxyTemplates($options);
         $this->createAppConfig($options);
-        $this->pm2StartApp();
+        $this->pm2StartApp($options);
 
         if ($options["npm_install"] === "yes") {
             $packageJsonPath =
@@ -190,7 +196,10 @@ class NodeJsSetup extends BaseSetup
 
         return $this->nodeJsUtils->moveFile(
             $tmpFile,
-            $this->nodeJsPaths->getAppEntryPoint($this->domain)
+            $this->nodeJsPaths->getAppEntryPoint(
+                $this->domain,
+                $options["modules_type"] === "CommonJS"
+            )
         );
     }
 
@@ -339,7 +348,13 @@ class NodeJsSetup extends BaseSetup
         $configContent[] =
             "NODE_VERSION=" . trim($options["node_version"] ?? "v20.20.2");
 
-        $excludeKeys = ["PORT", "start_script", "node_version", "npm_install"];
+        $excludeKeys = [
+            "PORT",
+            "start_script",
+            "node_version",
+            "npm_install",
+            "modules_type",
+        ];
         foreach ($options as $key => $value) {
             if (!in_array($key, $excludeKeys)) {
                 $formattedValue = $this->formatConfigValue($value);
@@ -388,11 +403,13 @@ class NodeJsSetup extends BaseSetup
         );
     }
 
-    public function pm2StartApp()
+    public function pm2StartApp(array $options = null)
     {
         return $this->appcontext->runUser("v-add-pm2-app", [
             $this->domain,
-            $this->nodeJsPaths->getAppEntryPointFileName(),
+            $this->nodeJsPaths->getAppEntryPointFileName(
+                $options["modules_type"] === "CommonJS"
+            ),
         ]);
     }
 }
