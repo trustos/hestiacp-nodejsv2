@@ -3,7 +3,7 @@ server {
         server_name %domain_idn% %alias_idn%;
         error_log /var/log/%web_system%/domains/%domain%.error.log error;
 
-	    include %home%/%user%/conf/web/%domain%/nginx.conf_*;
+        include %home%/%user%/conf/web/%domain%/nginx.conf_*;
 
         include %home%/%user%/hestiacp_nodejs_config/web/%domain%/nodejs-app.conf;
 
