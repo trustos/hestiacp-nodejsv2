@@ -94,6 +94,13 @@ fi
 
 # Logging
 $BIN/v-log-action "$user" "Info" "Web" "Ran npm install/ci for NodeJS application (Domain: $domain, Node.js: $node_version)."
-log_event "$OK" "$ARGUMENTS"
+
+# Debug logging
+echo "Debug: About to call log_event" >&2
+echo "Debug: OK=$OK" >&2
+echo "Debug: ARGUMENTS=$ARGUMENTS" >&2
+
+# Try to use log_event, but continue even if it fails
+log_event "$OK" "$ARGUMENTS" || echo "Debug: log_event failed" >&2
 
 exit
