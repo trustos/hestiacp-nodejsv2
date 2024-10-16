@@ -97,6 +97,11 @@ wget -qO- https://raw.githubusercontent.com/trustos/hestiacp-nodejsv2/refs/heads
 
 ## FAQ
 
+### Where to find the logs
+
+Most of the actions performed by the script are logged in the Profile -> "Logs" section of the HestiaCP panel.
+Also logs are written in the hestia's system and error logs.
+
 ### How to change the port if i have a web running
 
 First change proxy template to default, reconfigure the app using the QuickInstall and finally change the proxy template to NodeJS.
