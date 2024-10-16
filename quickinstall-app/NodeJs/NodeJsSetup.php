@@ -171,7 +171,6 @@ class NodeJsSetup extends BaseSetup
             $this->pm2StartApp($options);
         } catch (\Exception $e) {
             $this->appcontext->runUser("v-log-action", [
-                $this->appcontext->user,
                 "Error",
                 "Web",
                 "Failed to perform NodeJS installation for {$this->domain}: " .
@@ -348,9 +347,8 @@ class NodeJsSetup extends BaseSetup
         $appDir = $this->nodeJsPaths->getAppDir($this->domain);
         if (!is_dir($appDir)) {
             $this->appcontext->runUser("v-log-action", [
-                $this->appcontext->getUser(), // Change this line
                 "Error",
-                "NodeJS",
+                "Web",
                 "Application directory not found for {$this->domain} during npm install",
             ]);
             return;
@@ -374,18 +372,16 @@ class NodeJsSetup extends BaseSetup
                     (is_object($result) && $result->code !== 0)
                 ) {
                     $this->appcontext->runUser("v-log-action", [
-                        $this->appcontext->getUser(), // Change this line
                         "Error",
-                        "NodeJS",
+                        "Web",
                         "Failed to run npm install for {$this->domain}",
                     ]);
                     throw new \Exception("Failed to run npm install");
                 }
             } else {
                 $this->appcontext->runUser("v-log-action", [
-                    $this->appcontext->getUser(), // Change this line
                     "Warning",
-                    "NodeJS",
+                    "Web",
                     "package.json or package-lock.json not found for {$this->domain}. Skipping npm install.",
                 ]);
             }
