@@ -343,32 +343,52 @@ class NodeJsSetup extends BaseSetup
         );
     }
 
-    public function npmInstall(array $options = null)
+    public function npmInstall(array $options)
     {
-        if ($options["npm_install"] === "yes") {
-            $this->appcontext->runUser("v-add-npm-install", [
-                $this->appcontext->user,
-                $this->domain,
+        $appDir = $this->nodeJsPaths->getAppDir($this->domain);
+        if (!is_dir($appDir)) {
+            $this->appcontext->runUser("v-log-action", [
+                $this->appcontext->getUser(), // Change this line
+                "Error",
+                "NodeJS",
+                "Application directory not found for {$this->domain} during npm install",
             ]);
-            // $packageJsonPath =
-            //     $this->nodeJsPaths->getAppDir($this->domain) . "package.json";
-            // $packageLockJsonPath =
-            //     $this->nodeJsPaths->getAppDir($this->domain) .
-            //     "package-lock.json";
+            return;
+        }
 
-            // if (
-            //     file_exists($packageJsonPath) ||
-            //     file_exists($packageLockJsonPath)
-            // ) {
-            //     $this->appcontext->runUser("v-add-npm-install", [
-            //         $this->appcontext->user,
-            //         $this->domain,
-            //     ]);
-            // } else {
-            //     error_log(
-            //         "package.json or package-lock.json not found. Skipping npm install."
-            //     );
-            // }
+        if ($options["npm_install"] === "yes") {
+            $packageJsonPath = $appDir . "/package.json";
+            $packageLockJsonPath = $appDir . "/package-lock.json";
+
+            if (
+                file_exists($packageJsonPath) ||
+                file_exists($packageLockJsonPath)
+            ) {
+                $result = $this->appcontext->runUser("v-add-npm-install", [
+                    $this->appcontext->getUser(), // Change this line
+                    $this->domain,
+                ]);
+
+                if (
+                    $result === false ||
+                    (is_object($result) && $result->code !== 0)
+                ) {
+                    $this->appcontext->runUser("v-log-action", [
+                        $this->appcontext->getUser(), // Change this line
+                        "Error",
+                        "NodeJS",
+                        "Failed to run npm install for {$this->domain}",
+                    ]);
+                    throw new \Exception("Failed to run npm install");
+                }
+            } else {
+                $this->appcontext->runUser("v-log-action", [
+                    $this->appcontext->getUser(), // Change this line
+                    "Warning",
+                    "NodeJS",
+                    "package.json or package-lock.json not found for {$this->domain}. Skipping npm install.",
+                ]);
+            }
         }
     }
 
