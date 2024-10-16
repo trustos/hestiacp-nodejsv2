@@ -77,7 +77,16 @@ wget -qO- https://raw.githubusercontent.com/trustos/hestiacp-nodejsv2/refs/heads
    * **Port**: You can manage multiple apps with different ports, put different port for each app you have (Ex. 3000).
    It creates `.env` file in root of nodeapp with the selected port, without overwriting existing variables.
 
+   * **Modules type**: Choose between "ES Modules" or "CommonJS" based on your project's module system.
+
+   * **Run npm install after setup**: Select "yes" if you want to automatically install dependencies after setup.
+
    * **PHP Version**: This is only for HestiaCP you can put any value (**NOT IMPORTANT**)
+
+   * Environment Variables: You can add environment variables to your app. It creates `.env` file in root of nodeapp with the selected variables.
+   **NB**: The variables will be overwritten with the values that are set in the form.
+   **NB**: The variables are stored in plain text, so be careful with sensitive data.
+
 6. Go to Edit web > Advanced Options > Proxy Template > NodeJS
 7. Upload your app with filemanager, clone with git... in `/home/<user>/<domain.com>/private/nodeapp`
 8. PM2 will automatically start your app and set up to run on system startup
