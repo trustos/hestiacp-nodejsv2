@@ -363,7 +363,6 @@ class NodeJsSetup extends BaseSetup
                 file_exists($packageLockJsonPath)
             ) {
                 $result = $this->appcontext->runUser("v-add-npm-install", [
-                    $this->appcontext->getUser(), // Change this line
                     $this->domain,
                 ]);
 
