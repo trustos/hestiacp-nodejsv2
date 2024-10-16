@@ -50,12 +50,18 @@ if [ ! -d "$app_dir" ]; then
     exit 1
 fi
 
+# Change to the application directory
+cd "$app_dir" || {
+    $BIN/v-log-action "$user" "Error" "Web" "Failed to change to NodeJS application directory for $domain."
+    exit 1
+}
+
 # Source NVM for the user
 export NVM_DIR="$HOMEDIR/$user/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Read the .nvmrc file to get the Node.js version
-if [ ! -f "$app_dir/.nvmrc" ]; then
+if [ ! -f ".nvmrc" ]; then
     $BIN/v-log-action "$user" "Error" "Web" ".nvmrc file not found for $domain."
     exit 1
 fi
