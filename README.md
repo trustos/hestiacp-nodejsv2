@@ -21,8 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Significant changes from the original project:
 - Removed option to select Node version, now exclusively supporting NVM
-- Added automatic startup for PM2
-- Improved .env file handling to prevent overwriting and enhance security
+- Automatically installs NVM for the user if it's not installed
+- Added automatic startup for PM2 on boot
+- Added option to install dependencies after setup
+- Added option to select module type (ES Modules or CommonJS)
+- Added option to add environment variables
 
 ## Description
 
