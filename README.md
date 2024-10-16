@@ -91,7 +91,7 @@ wget -qO- https://raw.githubusercontent.com/trustos/hestiacp-nodejsv2/refs/heads
    **NB**: The variables are stored in plain text, so be careful with sensitive data.
 
 6. Go to Edit web > Advanced Options > Proxy Template > NodeJS
-7. Upload your app with filemanager, clone with git... in `/home/<user>/<domain.com>/private/nodeapp`
+7. Upload your app with filemanager, ftp or clone with git... in `/home/<user>/<domain.com>/private/nodeapp`
 8. PM2 will automatically start your app and set up to run on system startup
 9. 🎉 Congratulations you're done!!!
 
@@ -109,3 +109,6 @@ First change proxy template to default, reconfigure the app using the QuickInsta
 ### I want to remove the domain
 
 Remove it normally, open the filemanager and remove hestiacp_nodejs_config/web/<domain.com>.
+
+Example config for SvelteKit app:
+![Example SvelteKit config](example.png)
