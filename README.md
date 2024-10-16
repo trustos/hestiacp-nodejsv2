@@ -31,9 +31,12 @@ You can add multiple websites to your HestiaCP using different ports for each on
 When you create the app with the installer it automatically creates:
 * **/home/%USER%/%DOMAIN%/private/nodeapp** directory
 * Config for **nginx** to use the selected port
-* **ecosystem.config.js** with the necessary command to connect **pm2** and run your app Ex. `npm run start`
+* **ecosystem.config.js or ecosystem.config.cjs** with the necessary command to connect **pm2** and run your app Ex. `npm run start`
 * **.nvmrc** file with node version (NVM is required)
-
+* It will try to install NVM for the given user if it's not installed
+* It will try to install the selected node version if it's not installed
+* It will start the pm2 process and save it to start on boot (pm2 startup)
+* It will try to run `npm install` or `npm ci` (when a package-lock.json exists) if you selected that option
 
 ## Requirements
 1. Install [PM2](https://pm2.keymetrics.io/) globally (recommended)
