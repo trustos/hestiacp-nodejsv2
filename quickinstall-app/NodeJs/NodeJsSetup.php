@@ -142,91 +142,62 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $output = "PM2 Logs Debug Information:\n\n";
+        $output = "NodeJS Application Information:\n\n";
 
-        // Debug: Get user information using multiple methods
-        $output .= "Attempting to get user information:\n";
-
-        // Method 1: Using 'id' command
+        // Try to get package.json content
+        $output .= "Attempting to read package.json:\n";
         try {
-            $idCommand = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
-            $output .= "Raw 'id' command output: " . $idCommand . "\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Exception when running 'id' command: " .
-                $e->getMessage() .
-                "\n";
-        }
-
-        // Method 2: Using 'whoami' command
-        try {
-            $whoamiCommand = $this->appcontext->runUser("v-run-cli-cmd", [
-                "whoami",
+            $packageJson = $this->appcontext->runUser("v-run-cli-cmd", [
+                "grep",
+                "",
+                "package.json",
             ]);
-            $output .= "Raw 'whoami' command output: " . $whoamiCommand . "\n";
+            $output .= $packageJson
+                ? "package.json content:\n$packageJson\n"
+                : "package.json not found or empty.\n";
         } catch (\Exception $e) {
-            $output .=
-                "Exception when running 'whoami' command: " .
-                $e->getMessage() .
-                "\n";
+            $output .= "Error reading package.json: " . $e->getMessage() . "\n";
         }
 
-        // Method 3: Using 'pwd' command
+        // Try to list current directory
+        $output .= "\nAttempting to list current directory:\n";
         try {
-            $pwdCommand = $this->appcontext->runUser("v-run-cli-cmd", ["pwd"]);
-            $output .= "Current working directory: " . $pwdCommand . "\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Exception when running 'pwd' command: " .
-                $e->getMessage() .
-                "\n";
-        }
-
-        // Debug: List allowed commands
-        $output .= "\nAllowed commands in v-run-cli-cmd:\n";
-        try {
-            $allowedCommands = $this->appcontext->runUser("v-run-cli-cmd", [
-                "echo",
-                '$PATH',
-            ]);
-            $output .= "PATH: $allowedCommands\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Exception when listing allowed commands: " .
-                $e->getMessage() .
-                "\n";
-        }
-
-        // Debug: Try to list home directory
-        $output .= "\nAttempting to list home directory:\n";
-        try {
-            $lsHome = $this->appcontext->runUser("v-run-cli-cmd", [
+            $lsCurrent = $this->appcontext->runUser("v-run-cli-cmd", [
                 "ls",
-                "-l",
-                "/home",
+                "-la",
             ]);
-            $output .= "ls -l /home output:\n$lsHome\n";
+            $output .= "Current directory contents:\n$lsCurrent\n";
         } catch (\Exception $e) {
             $output .=
-                "Exception when listing home directory: " .
-                $e->getMessage() .
-                "\n";
+                "Error listing current directory: " . $e->getMessage() . "\n";
         }
 
-        // Debug: Check for .pm2 directory in current directory
-        $output .= "\nChecking for .pm2 directory in current directory:\n";
+        // Try to get Node.js version
+        $output .= "\nAttempting to get Node.js version:\n";
         try {
-            $checkPm2Dir = $this->appcontext->runUser("v-run-cli-cmd", [
-                "ls",
-                "-l",
-                ".pm2",
+            $nodeVersion = $this->appcontext->runUser("v-run-cli-cmd", [
+                "node",
+                "-v",
             ]);
-            $output .= "ls -l .pm2 output:\n$checkPm2Dir\n";
+            $output .= "Node.js version: $nodeVersion\n";
         } catch (\Exception $e) {
             $output .=
-                "Exception when checking .pm2 directory: " .
-                $e->getMessage() .
-                "\n";
+                "Error getting Node.js version: " . $e->getMessage() . "\n";
+        }
+
+        // Try to list global npm packages
+        $output .= "\nAttempting to list global npm packages:\n";
+        try {
+            $npmList = $this->appcontext->runUser("v-run-cli-cmd", [
+                "npm",
+                "list",
+                "-g",
+                "--depth=0",
+            ]);
+            $output .= "Global npm packages:\n$npmList\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Error listing global npm packages: " . $e->getMessage() . "\n";
         }
 
         return $output;
