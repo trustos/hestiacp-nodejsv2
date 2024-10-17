@@ -58,6 +58,8 @@ sudo cp bin/v-add-nvm-nodejs /usr/local/hestia/bin || handle_error "Failed to co
 sudo chmod 755 /usr/local/hestia/bin/v-add-nvm-nodejs || handle_error "Failed to change permissions for v-add-nvm-nodejs"
 sudo cp bin/v-add-npm-install /usr/local/hestia/bin || handle_error "Failed to copy v-add-npm-install"
 sudo chmod 755 /usr/local/hestia/bin/v-add-npm-install || handle_error "Failed to change permissions for v-add-npm-install"
+sudo cp bin/v-list-pm2-logs /usr/local/hestia/bin || handle_error "Failed to copy v-list-pm2-logs"
+sudo chmod 755 /usr/local/hestia/bin/v-list-pm2-logs || handle_error "Failed to change permissions for v-list-pm2-logs"
 
 echo -e "${START} Add pm2 manager to /usr/local/hestia/bin ✅"
 

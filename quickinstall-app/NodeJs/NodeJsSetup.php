@@ -142,21 +142,16 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $output = "NodeJS Application Information:\n\n";
+        $output = "PM2 Logs for {$this->domain}:\n\n";
 
-        // List contents of the public_html directory
         try {
-            $lsOutput = $this->appcontext->runUser("v-run-cli-cmd", [
-                "ls",
-                "-la",
-                "~/.pm2/logs",
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
+                $this->domain,
+                "100",
             ]);
-            $output .= "Contents of pm2 logs directory:\n$lsOutput\n\n";
+            $output .= is_string($logs) ? $logs : "No logs available.\n";
         } catch (\Exception $e) {
-            $output .=
-                "Error listing pm2 logs directory: " .
-                $e->getMessage() .
-                "\n\n";
+            $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
 
         return $output;
