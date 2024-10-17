@@ -140,12 +140,15 @@ class NodeJsSetup extends BaseSetup
         return [];
     }
 
-    rotected function getPm2Logs()
+    protected function getPm2Logs()
     {
         $output = "PM2 Logs Diagnostic:\n\n";
 
         // Execute v-list-pm2-logs directly
-        $command = "/usr/local/hestia/bin/v-list-pm2-logs " . escapeshellarg($this->user) . " 100";
+        $command =
+            "/usr/local/hestia/bin/v-list-pm2-logs " .
+            escapeshellarg($this->user) .
+            " 100";
         $directOutput = shell_exec($command);
 
         $output .= "Direct command output:\n";
@@ -157,7 +160,10 @@ class NodeJsSetup extends BaseSetup
 
         // Also try the original method for comparison
         try {
-            $logs = $this->appcontext->runUser('v-list-pm2-logs', [$this->user, '100']);
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
+                $this->user,
+                "100",
+            ]);
 
             $output .= "\nOriginal method output:\n";
             if (is_string($logs) && !empty($logs)) {
@@ -166,7 +172,8 @@ class NodeJsSetup extends BaseSetup
                 $output .= "No PM2 logs available or unexpected response.\n";
                 $output .= "Response type: " . gettype($logs) . "\n";
                 if (is_bool($logs)) {
-                    $output .= "Boolean value: " . ($logs ? "true" : "false") . "\n";
+                    $output .=
+                        "Boolean value: " . ($logs ? "true" : "false") . "\n";
                 } elseif (is_array($logs)) {
                     $output .= "Array content: " . print_r($logs, true) . "\n";
                 }
