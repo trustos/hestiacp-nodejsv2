@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   var form = document.querySelector("form");
+
+  console.log(appData);
+
   if (form) {
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
@@ -22,14 +25,14 @@ document.addEventListener("DOMContentLoaded", function () {
     envContainer.id = "env-variables-container";
     envContainer.style.display = "none"; // Initially collapsed
 
-    Object.keys(existingEnv).forEach(function (key) {
+    Object.keys(appData).forEach(function (key) {
       if (key.toLowerCase() === "port") {
         const portInput = form.querySelector(
           '[name="webapp_' + key.toLowerCase() + '"]',
         );
-        portInput && portInput.setAttribute("value", existingEnv[key]);
+        portInput && portInput.setAttribute("value", appData[key]);
       } else {
-        appendEnvRow(envContainer, key, existingEnv[key]);
+        appendEnvRow(envContainer, key, appData[key]);
       }
     });
 
