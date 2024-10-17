@@ -26,6 +26,7 @@ Significant changes from the original project:
 - Added option to install dependencies after setup
 - Added option to select module type (ES Modules or CommonJS)
 - Added option to add environment variables
+- Automatically fills in all the options if pre-existing configurations are found
 
 ## Description
 
