@@ -186,9 +186,7 @@ class NodeJsSetup extends BaseSetup
         $ecosystemData = $this->readEcosystemFile();
         $nvmrcData = $this->readNvmrcFile();
 
-        $combinedData = array_merge($existingEnv, $ecosystemData, [
-            "node_version" => $nvmrcData,
-        ]);
+        $combinedData = array_merge($existingEnv, $ecosystemData, $nvmrcData);
         $dataJson = json_encode($combinedData);
 
         $scriptPath = __DIR__ . "/env-vars-script.js";

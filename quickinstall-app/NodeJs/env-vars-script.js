@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     envContainer.style.display = "none"; // Initially collapsed
 
     Object.keys(appData).forEach(function (key) {
-      if (key === "node_version" && appData["node_version"]) {
+      if (key === "node_version" && appData[key]) {
         const nodeVersionSelect = form.querySelector(
           '[name="webapp_' + key + '"]',
         );
