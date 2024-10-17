@@ -45,8 +45,6 @@ sudo rm /usr/local/hestia/bin/v-add-nvm-nodejs || handle_error "Failed to remove
 echo -e "${START} Removed nvm manager from /usr/local/hestia/bin ✅"
 sudo rm /usr/local/hestia/bin/v-add-npm-install || handle_error "Failed to remove v-add-npm-install"
 echo -e "${START} Removed npm install script from /usr/local/hestia/bin ✅"
-sudo rm /usr/local/hestia/bin/v-list-pm2-logs || handle_error "Failed to remove v-list-pm2-logs"
-echo -e "${START} Removed list logs for pm2 script from /usr/local/hestia/bin ✅"
 
 echo -e "${GREEN}Uninstallation completed successfully!${ENDCOLOR}"
 echo -e "${YELLOW}Note: This script does not remove any Node.js applications or PM2 processes that may have been created.${ENDCOLOR}"
