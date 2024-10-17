@@ -145,13 +145,35 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs Diagnostic:\n\n";
 
         try {
-            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
+            $result = $this->appcontext->runUser("v-list-pm2-logs", [
                 $this->user,
                 "100",
             ]);
-            $output .= is_string($logs)
-                ? $logs
-                : "Unexpected output type: " . gettype($logs) . "\n";
+
+            $output .=
+                "Command execution result type: " . gettype($result) . "\n";
+
+            if (is_bool($result)) {
+                $output .=
+                    "Boolean value: " . ($result ? "true" : "false") . "\n";
+            } elseif (is_string($result)) {
+                $output .= "String value:\n" . $result . "\n";
+            } elseif (is_array($result)) {
+                $output .= "Array value:\n" . print_r($result, true) . "\n";
+            } else {
+                $output .= "Unexpected result type\n";
+            }
+
+            // Try to execute the command directly
+            $directOutput = shell_exec(
+                "/usr/local/hestia/bin/v-list-pm2-logs " .
+                    escapeshellarg($this->user) .
+                    " 100"
+            );
+            $output .=
+                "\nDirect command execution result:\n" .
+                ($directOutput !== null ? $directOutput : "No output") .
+                "\n";
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
