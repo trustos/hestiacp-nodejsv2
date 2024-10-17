@@ -95,6 +95,33 @@ class NodeJsSetup extends BaseSetup
         return $envContent;
     }
 
+    protected function readEcosystemFile()
+    {
+        $appDir = $this->nodeJsPaths->getAppDir($this->domain);
+        $ecosystemPathJs = $appDir . "/ecosystem.config.js";
+        $ecosystemPathCjs = $appDir . "/ecosystem.config.cjs";
+
+        // Prefer .cjs if it exists, otherwise use .js
+        $ecosystemPath = file_exists($ecosystemPathCjs)
+            ? $ecosystemPathCjs
+            : $ecosystemPathJs;
+
+        if (file_exists($ecosystemPath)) {
+            $content = file_get_contents($ecosystemPath);
+            // Use a more robust regex to extract the start script
+            if (
+                preg_match(
+                    "/script\s*:\s*['\"](.+?)['\"]|script\s*:\s*`(.+?)`/",
+                    $content,
+                    $matches
+                )
+            ) {
+                return ["start_script" => $matches[1] ?? $matches[2]];
+            }
+        }
+        return [];
+    }
+
     protected function installNvm(array $options): void
     {
         $nodeVersion = $options["node_version"] ?? "v20.18.0";
@@ -144,13 +171,15 @@ class NodeJsSetup extends BaseSetup
     private function getCustomScript()
     {
         $existingEnv = $this->readExistingEnv();
-        $envJson = json_encode($existingEnv);
+        $ecosystemData = $this->readEcosystemFile();
+        $combinedData = array_merge($existingEnv, $ecosystemData);
+        $dataJson = json_encode($combinedData);
 
         $scriptPath = __DIR__ . "/env-vars-script.js";
         $scriptContent = file_get_contents($scriptPath);
 
         return "<script>
-                var existingEnv = {$envJson};
+                var appData = {$dataJson};
                 {$scriptContent}
             </script>";
     }
