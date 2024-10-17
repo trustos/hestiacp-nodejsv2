@@ -142,57 +142,133 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        // Get user information
+        $output = "PM2 Logs Debug Information:\n\n";
+
+        // Debug: Get user information
+        $output .= "Attempting to get user information:\n";
         try {
-            $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
-            preg_match("/\(([^)]+)\)/", $userInfo, $matches);
-            $username = $matches[1] ?? $this->domain;
-        } catch (\Exception $e) {
-            return "Unable to retrieve user information: " . $e->getMessage();
-        }
+            $idCommand = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
+            $output .= "Raw 'id' command output: " . $idCommand . "\n\n";
 
-        $homeDir = "/home/$username";
-        $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
-        $errorLogPath = "$homeDir/.pm2/logs/{$this->domain}-error.log";
-
-        // Prepare the output
-        $output = "PM2 Logs for {$this->domain}:\n\n";
-        $output .= "User: $username\n\n";
-
-        // Function to safely run grep and handle potential errors
-        $safeGrep = function ($path) {
-            try {
-                return $this->appcontext->runUser("v-run-cli-cmd", [
-                    "grep",
-                    "-H",
-                    "^",
-                    $path,
-                ]);
-            } catch (\Exception $e) {
-                return null;
+            if (preg_match("/\(([^)]+)\)/", $idCommand, $matches)) {
+                $username = $matches[1];
+                $output .= "Extracted username: $username\n";
+            } else {
+                $output .=
+                    "Failed to extract username from 'id' command output.\n";
             }
-        };
-
-        // Check and read standard output log
-        $output .= "=== Standard Output Log ===\n";
-        $outLogContent = $safeGrep($outLogPath);
-        if ($outLogContent !== null && !empty($outLogContent)) {
-            $output .= $outLogContent;
-        } else {
-            $output .= "Log file is empty or does not exist.\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when running 'id' command: " .
+                $e->getMessage() .
+                "\n";
         }
 
-        // Check and read error log
-        $output .= "\n=== Error Log ===\n";
-        $errorLogContent = $safeGrep($errorLogPath);
-        if ($errorLogContent !== null && !empty($errorLogContent)) {
-            $output .= $errorLogContent;
-        } else {
-            $output .= "Log file is empty or does not exist.\n";
+        // Debug: List allowed commands
+        $output .= "\nAllowed commands in v-run-cli-cmd:\n";
+        try {
+            $allowedCommands = $this->appcontext->runUser("v-run-cli-cmd", [
+                "echo",
+                '$PATH',
+            ]);
+            $output .= "PATH: $allowedCommands\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when listing allowed commands: " .
+                $e->getMessage() .
+                "\n";
+        }
+
+        // Debug: Try to list home directory
+        $output .= "\nAttempting to list home directory:\n";
+        try {
+            $lsHome = $this->appcontext->runUser("v-run-cli-cmd", [
+                "ls",
+                "-l",
+                "/home",
+            ]);
+            $output .= "ls -l /home output:\n$lsHome\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when listing home directory: " .
+                $e->getMessage() .
+                "\n";
+        }
+
+        // Debug: Check if .pm2 directory exists
+        if (isset($username)) {
+            $output .= "\nChecking for .pm2 directory:\n";
+            try {
+                $checkPm2Dir = $this->appcontext->runUser("v-run-cli-cmd", [
+                    "ls",
+                    "-l",
+                    "/home/$username/.pm2",
+                ]);
+                $output .= "ls -l /home/$username/.pm2 output:\n$checkPm2Dir\n";
+            } catch (\Exception $e) {
+                $output .=
+                    "Exception when checking .pm2 directory: " .
+                    $e->getMessage() .
+                    "\n";
+            }
         }
 
         return $output;
     }
+
+    // protected function getPm2Logs()
+    // {
+    //     // Get user information
+    //     try {
+    //         $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
+    //         preg_match("/\(([^)]+)\)/", $userInfo, $matches);
+    //         $username = $matches[1] ?? $this->domain;
+    //     } catch (\Exception $e) {
+    //         return "Unable to retrieve user information: " . $e->getMessage();
+    //     }
+
+    //     $homeDir = "/home/$username";
+    //     $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
+    //     $errorLogPath = "$homeDir/.pm2/logs/{$this->domain}-error.log";
+
+    //     // Prepare the output
+    //     $output = "PM2 Logs for {$this->domain}:\n\n";
+    //     $output .= "User: $username\n\n";
+
+    //     // Function to safely run grep and handle potential errors
+    //     $safeGrep = function ($path) {
+    //         try {
+    //             return $this->appcontext->runUser("v-run-cli-cmd", [
+    //                 "grep",
+    //                 "-H",
+    //                 "^",
+    //                 $path,
+    //             ]);
+    //         } catch (\Exception $e) {
+    //             return null;
+    //         }
+    //     };
+
+    //     // Check and read standard output log
+    //     $output .= "=== Standard Output Log ===\n";
+    //     $outLogContent = $safeGrep($outLogPath);
+    //     if ($outLogContent !== null && !empty($outLogContent)) {
+    //         $output .= $outLogContent;
+    //     } else {
+    //         $output .= "Log file is empty or does not exist.\n";
+    //     }
+
+    //     // Check and read error log
+    //     $output .= "\n=== Error Log ===\n";
+    //     $errorLogContent = $safeGrep($errorLogPath);
+    //     if ($errorLogContent !== null && !empty($errorLogContent)) {
+    //         $output .= $errorLogContent;
+    //     } else {
+    //         $output .= "Log file is empty or does not exist.\n";
+    //     }
+
+    //     return $output;
+    // }
 
     protected function installNvm(array $options): void
     {
