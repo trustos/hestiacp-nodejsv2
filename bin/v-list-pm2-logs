@@ -9,7 +9,7 @@
 user=$1
 lines=${2:-100}
 
-echo "Debugging information:"
+echo "Step 1: Debugging information"
 echo "User: $user"
 echo "Lines: $lines"
 
@@ -18,7 +18,7 @@ run_as_user() {
     sudo -u "$user" bash -c "$1"
 }
 
-# Check if NVM is used
+echo "Step 2: Checking for NVM"
 if [ -s "/home/$user/.nvm/nvm.sh" ]; then
     echo "Using NVM"
     nvm_prefix="export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\" &&"
@@ -27,22 +27,23 @@ else
     nvm_prefix=""
 fi
 
-# Locate PM2
+echo "Step 3: Locating PM2"
 pm2_path=$(run_as_user "which pm2")
 echo "PM2 path: $pm2_path"
 
-# List PM2 processes
+echo "Step 4: Listing PM2 processes"
+pm2_list=$(run_as_user "${nvm_prefix} pm2 list")
 echo "PM2 processes:"
-run_as_user "${nvm_prefix} pm2 list"
+echo "$pm2_list"
 
-# Get PM2 logs
-echo "PM2 logs:"
+echo "Step 5: Getting PM2 logs"
 logs=$(run_as_user "${nvm_prefix} pm2 logs --lines $lines --nostream --raw")
-
+echo "PM2 logs:"
 if [ -n "$logs" ]; then
     echo "$logs"
 else
     echo "No PM2 logs available for user $user"
 fi
 
+echo "Script execution completed"
 exit 0

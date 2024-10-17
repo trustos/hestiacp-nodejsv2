@@ -142,14 +142,16 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $output = "PM2 Logs for user account:\n\n";
+        $output = "PM2 Logs Diagnostic:\n\n";
 
         try {
             $logs = $this->appcontext->runUser("v-list-pm2-logs", [
                 $this->user,
                 "100",
             ]);
-            $output .= $logs; // Include all output for debugging
+            $output .= is_string($logs)
+                ? $logs
+                : "Unexpected output type: " . gettype($logs) . "\n";
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
