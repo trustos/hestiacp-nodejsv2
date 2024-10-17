@@ -143,9 +143,13 @@ class NodeJsSetup extends BaseSetup
     protected function getPm2Logs()
     {
         // Get user information
-        $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
-        preg_match("/\(([^)]+)\)/", $userInfo, $matches);
-        $username = $matches[1] ?? $this->domain;
+        try {
+            $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
+            preg_match("/\(([^)]+)\)/", $userInfo, $matches);
+            $username = $matches[1] ?? $this->domain;
+        } catch (\Exception $e) {
+            return "Unable to retrieve user information: " . $e->getMessage();
+        }
 
         $homeDir = "/home/$username";
         $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
@@ -155,26 +159,33 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs for {$this->domain}:\n\n";
         $output .= "User: $username\n\n";
 
-        // Check if files exist and read their contents using grep
+        // Function to safely run grep and handle potential errors
+        $safeGrep = function ($path) {
+            try {
+                return $this->appcontext->runUser("v-run-cli-cmd", [
+                    "grep",
+                    "-H",
+                    "^",
+                    $path,
+                ]);
+            } catch (\Exception $e) {
+                return null;
+            }
+        };
+
+        // Check and read standard output log
         $output .= "=== Standard Output Log ===\n";
-        $outLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
-            "grep",
-            "",
-            $outLogPath,
-        ]);
-        if (is_string($outLogContent) && !empty($outLogContent)) {
+        $outLogContent = $safeGrep($outLogPath);
+        if ($outLogContent !== null && !empty($outLogContent)) {
             $output .= $outLogContent;
         } else {
             $output .= "Log file is empty or does not exist.\n";
         }
 
+        // Check and read error log
         $output .= "\n=== Error Log ===\n";
-        $errorLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
-            "grep",
-            "",
-            $errorLogPath,
-        ]);
-        if (is_string($errorLogContent) && !empty($errorLogContent)) {
+        $errorLogContent = $safeGrep($errorLogPath);
+        if ($errorLogContent !== null && !empty($errorLogContent)) {
             $output .= $errorLogContent;
         } else {
             $output .= "Log file is empty or does not exist.\n";
