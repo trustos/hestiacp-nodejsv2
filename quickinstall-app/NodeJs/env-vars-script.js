@@ -138,8 +138,6 @@ document.addEventListener("DOMContentLoaded", function () {
     form.querySelector(".form-container").appendChild(envSection);
 
     form.addEventListener("submit", function (event) {
-      event.preventDefault();
-
       // Gather all environment variables
       var envVars = {};
       var rows = envContainer.querySelectorAll(".env-row");
