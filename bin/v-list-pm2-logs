@@ -1,4 +1,3 @@
-```bash
 #!/bin/bash
 # info: list PM2 logs for a user
 # options: USER [LINES]
@@ -14,28 +13,36 @@ echo "Debugging information:"
 echo "User: $user"
 echo "Lines: $lines"
 
-# Function to run pm2 logs command
-get_pm2_logs() {
-    if [ -s "/home/$user/.nvm/nvm.sh" ]; then
-        echo "Using NVM"
-        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && which pm2 && pm2 list && pm2 logs --lines $lines --nostream --raw" 2>&1
-    else
-        echo "Not using NVM"
-        sudo -u $user bash -c "which pm2 && pm2 list && pm2 logs --lines $lines --nostream --raw" 2>&1
-    fi
+# Function to run command as user
+run_as_user() {
+    sudo -u "$user" bash -c "$1"
 }
 
-echo "Attempting to get PM2 logs..."
-logs=$(get_pm2_logs)
+# Check if NVM is used
+if [ -s "/home/$user/.nvm/nvm.sh" ]; then
+    echo "Using NVM"
+    nvm_prefix="export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\" &&"
+else
+    echo "Not using NVM"
+    nvm_prefix=""
+fi
 
-echo "Raw output:"
-echo "$logs"
+# Locate PM2
+pm2_path=$(run_as_user "which pm2")
+echo "PM2 path: $pm2_path"
 
-echo "Processed output:"
+# List PM2 processes
+echo "PM2 processes:"
+run_as_user "${nvm_prefix} pm2 list"
+
+# Get PM2 logs
+echo "PM2 logs:"
+logs=$(run_as_user "${nvm_prefix} pm2 logs --lines $lines --nostream --raw")
+
 if [ -n "$logs" ]; then
-    echo "$logs" | grep -v '^\[TAILING\]'
+    echo "$logs"
 else
     echo "No PM2 logs available for user $user"
 fi
 
-exit
+exit 0

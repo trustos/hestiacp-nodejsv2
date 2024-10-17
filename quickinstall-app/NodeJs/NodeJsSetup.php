@@ -145,7 +145,10 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs for user account:\n\n";
 
         try {
-            $logs = $this->appcontext->runUser("v-list-pm2-logs", ["100"]);
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
+                $this->user,
+                "100",
+            ]);
             $output .= $logs; // Include all output for debugging
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
