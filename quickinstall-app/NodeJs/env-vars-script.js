@@ -1,17 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("NodeJs setup script loaded");
-  console.log("Existing .env contents:", existingEnv);
-
   var form = document.querySelector("form");
   if (form) {
-    // Populate form fields with existing .env values
-    // Object.keys(existingEnv).forEach(function (key) {
-    //   var input = form.querySelector('[name="webapp_' + key + '"]');
-    //   if (input) {
-    //     input.value = existingEnv[key];
-    //   }
-    // });
-
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
     envSection.className = "u-mb10";
@@ -35,7 +24,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Object.keys(existingEnv).forEach(function (key) {
       if (key.toLowerCase() === "port") {
-        const portInput = form.querySelector('[name="webapp_' + key + '"]');
+        const portInput = form.querySelector(
+          '[name="webapp_' + key.toLowerCase() + '"]',
+        );
         portInput && portInput.setAttribute("value", existingEnv[key]);
       } else {
         appendEnvRow(envContainer, key, existingEnv[key]);
@@ -91,11 +82,9 @@ document.addEventListener("DOMContentLoaded", function () {
       hiddenInput.value = JSON.stringify(envVars);
       hiddenInput.style.display = "none";
       form.appendChild(hiddenInput);
-
-      console.log("Form submitted with env vars:", envVars);
     });
   } else {
-    console.log("Form not found");
+    console.error("Form not found");
   }
 });
 
