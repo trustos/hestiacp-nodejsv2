@@ -10,12 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
       "border-color: #ffeeba; background-color: #fff3cd; color: #856404; display: none;";
     warningDiv.innerHTML = `
           <div>
-            <p class="u-mb10">Port in use Warning!</p>
-            <p class="u-mb10">The port <span id="port-in-use"></span> you have chosen is already in use! Make sure that you point the app to the right one</p>
+            <strong class="u-mb10">Port in use Warning!</strong>
+            <p class="u-mb10">The port <strong id="port-in-use"></strong> you have chosen is already in use! Make sure that you point the app to the right one</p>
           </div>
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
         `;
 
     // Find the form-container and its h1
