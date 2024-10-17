@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   var form = document.querySelector("form");
 
-  console.log(appData);
-
   if (form) {
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
