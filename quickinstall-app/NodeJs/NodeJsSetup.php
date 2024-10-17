@@ -193,6 +193,14 @@ class NodeJsSetup extends BaseSetup
         $nvmrcData = $this->readNvmrcFile();
 
         $combinedData = array_merge($existingEnv, $ecosystemData, $nvmrcData);
+
+        // Get open ports
+        $openPorts = shell_exec(
+            "ss -tuln | awk '{print $5}' | grep : | cut -d: -f2 | sort -nu"
+        );
+        $openPortsArray = array_filter(explode("\n", $openPorts));
+        $combinedData["openPorts"] = $openPortsArray;
+
         $dataJson = json_encode($combinedData);
 
         $scriptPath = __DIR__ . "/env-vars-script.js";

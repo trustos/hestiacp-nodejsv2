@@ -2,6 +2,46 @@ document.addEventListener("DOMContentLoaded", function () {
   var form = document.querySelector("form");
 
   if (form) {
+    // Append port input listened
+    const portInputListener = form.querySelector('[name="webapp_port"]');
+
+    if (portInputListener) {
+      // Create the warning message div
+      const warningDiv = document.createElement("div");
+      warningDiv.className = "alert alert-warning u-mb10";
+      warningDiv.role = "alert";
+      warningDiv.style.cssText =
+        "border-color: #ffeeba; background-color: #fff3cd; color: #856404; display: none;";
+      warningDiv.innerHTML = `
+            <i class="fas fa-info"></i>
+            <div>
+              <p class="u-mb10">Port in use Warning!</p>
+              <p class="u-mb10">The port you have chosen is already in use! Make sure that you point the app to the right one</p>
+            </div>
+          `;
+
+      // Insert the warning div after the port input
+      portInputListener.parentNode.insertBefore(
+        warningDiv,
+        portInputListener.nextSibling,
+      );
+
+      portInputListener.addEventListener("input", (event) => {
+        const enteredPort = event.target.value;
+        console.log(enteredPort);
+
+        // Check if the entered port is in the openPorts array
+        if (
+          appData["openPorts"] &&
+          appData["openPorts"].includes(parseInt(enteredPort))
+        ) {
+          warningDiv.style.display = "block";
+        } else {
+          warningDiv.style.display = "none";
+        }
+      });
+    }
+
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
     envSection.className = "u-mb10";
@@ -49,6 +89,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (modulesTypeSelect) {
           modulesTypeSelect.value = appData[key];
         }
+      } else if (key === "openPorts") {
+        // Do not process openPorts
       } else {
         appendEnvRow(envContainer, key, appData[key]);
       }
@@ -85,6 +127,8 @@ document.addEventListener("DOMContentLoaded", function () {
     form.querySelector(".form-container").appendChild(envSection);
 
     form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
       // Gather all environment variables
       var envVars = {};
       var rows = envContainer.querySelectorAll(".env-row");
