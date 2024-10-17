@@ -18,8 +18,17 @@ document.addEventListener("DOMContentLoaded", function () {
           </button>
         `;
 
-    // Insert the warning div at the beginning of the form
-    form.insertBefore(warningDiv, form.firstChild);
+    // Find the form-container and its h1
+    const formContainer = form.querySelector(".form-container");
+    const h1 = formContainer.querySelector("h1");
+
+    // Insert the warning div after the h1
+    if (h1 && h1.nextSibling) {
+      formContainer.insertBefore(warningDiv, h1.nextSibling);
+    } else {
+      // If there's no h1 or it's the last element, append to the form-container
+      formContainer.appendChild(warningDiv);
+    }
 
     const portInputListener = form.querySelector('[name="webapp_port"]');
 
