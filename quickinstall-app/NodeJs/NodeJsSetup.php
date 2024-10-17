@@ -140,6 +140,17 @@ class NodeJsSetup extends BaseSetup
         return [];
     }
 
+    protected function getPm2Logs()
+    {
+        $command = "pm2 logs --lines 100 --nostream --raw";
+        $logOutput = $this->appcontext->runUser("v-run-cli-cmd", [
+            $this->domain,
+            $command,
+        ]);
+
+        return is_string($logOutput) ? $logOutput : "";
+    }
+
     protected function installNvm(array $options): void
     {
         $nodeVersion = $options["node_version"] ?? "v20.18.0";
@@ -191,8 +202,10 @@ class NodeJsSetup extends BaseSetup
         $existingEnv = $this->readExistingEnv();
         $ecosystemData = $this->readEcosystemFile();
         $nvmrcData = $this->readNvmrcFile();
+        $pm2Logs = $this->getPm2Logs();
 
         $combinedData = array_merge($existingEnv, $ecosystemData, $nvmrcData);
+        $combinedData["pm2Logs"] = $pm2Logs;
 
         // Get open ports
         $openPorts = shell_exec(
