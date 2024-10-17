@@ -2,35 +2,32 @@ document.addEventListener("DOMContentLoaded", function () {
   var form = document.querySelector("form");
 
   if (form) {
-    // Append port input listened
+    // Create the warning message div
+    const warningDiv = document.createElement("div");
+    warningDiv.className = "alert alert-warning alert-dismissible u-mb10";
+    warningDiv.role = "alert";
+    warningDiv.style.cssText =
+      "border-color: #ffeeba; background-color: #fff3cd; color: #856404; display: none;";
+    warningDiv.innerHTML = `
+          <div>
+            <p class="u-mb10">Port in use Warning!</p>
+            <p class="u-mb10">The port <span id="port-in-use"></span> you have chosen is already in use! Make sure that you point the app to the right one</p>
+          </div>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        `;
+
+    // Insert the warning div at the beginning of the form
+    form.insertBefore(warningDiv, form.firstChild);
+
     const portInputListener = form.querySelector('[name="webapp_port"]');
 
     console.log(appData);
 
     if (portInputListener) {
-      // Create the warning message div
-      const warningDiv = document.createElement("div");
-      warningDiv.className = "alert alert-warning u-mb10";
-      warningDiv.role = "alert";
-      warningDiv.style.cssText =
-        "border-color: #ffeeba; background-color: #fff3cd; color: #856404; display: none;";
-      warningDiv.innerHTML = `
-            <i class="fas fa-info"></i>
-            <div>
-              <p class="u-mb10">Port in use Warning!</p>
-              <p class="u-mb10">The port you have chosen is already in use! Make sure that you point the app to the right one</p>
-            </div>
-          `;
-
-      // Insert the warning div after the port input
-      portInputListener.parentNode.insertBefore(
-        warningDiv,
-        portInputListener.nextSibling,
-      );
-
       portInputListener.addEventListener("input", (event) => {
         const enteredPort = event.target.value;
-        console.log(enteredPort);
 
         // Check if the entered port is in the openPorts object
         if (appData.openPorts && typeof appData.openPorts === "object") {
@@ -38,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
             enteredPort,
           );
           if (isPortInUse) {
+            document.getElementById("port-in-use").textContent = enteredPort;
             warningDiv.style.display = "block";
           } else {
             warningDiv.style.display = "none";
