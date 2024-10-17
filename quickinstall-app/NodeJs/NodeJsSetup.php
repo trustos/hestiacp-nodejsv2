@@ -145,18 +145,22 @@ class NodeJsSetup extends BaseSetup
         $outLogPath = "~/.pm2/logs/{$this->domain}-out.log";
         $errorLogPath = "~/.pm2/logs/{$this->domain}-error.log";
 
-        // Command to read the entire log files
-        $outLogCmd = "cat $outLogPath";
-        $errorLogCmd = "cat $errorLogPath";
+        // Command to read the entire log files using grep
+        $outLogCmd = "grep '' $outLogPath";
+        $errorLogCmd = "grep '' $errorLogPath";
 
         // Use v-run-cli-cmd to execute the commands
         $outLog = $this->appcontext->runUser("v-run-cli-cmd", [
             $this->domain,
-            $outLogCmd,
+            "grep",
+            "''",
+            $outLogPath,
         ]);
         $errorLog = $this->appcontext->runUser("v-run-cli-cmd", [
             $this->domain,
-            $errorLogCmd,
+            "grep",
+            "''",
+            $errorLogPath,
         ]);
 
         // Prepare the output
