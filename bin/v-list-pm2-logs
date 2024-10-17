@@ -25,7 +25,7 @@ if [ -z "$pm2_path" ]; then
     pm2_path=$(run_as_user "[ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\" && which pm2")
     if [ -z "$pm2_path" ]; then
         echo "PM2 is not installed or not in PATH for user $user"
-        exit 1
+        exit 0
     fi
     echo "PM2 found in NVM: $pm2_path"
     nvm_prefix="[ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\" &&"
@@ -36,7 +36,12 @@ fi
 
 # List PM2 processes
 echo "PM2 processes:"
-run_as_user "${nvm_prefix} pm2 list"
+pm2_list=$(run_as_user "${nvm_prefix} pm2 list")
+if [ -n "$pm2_list" ]; then
+    echo "$pm2_list"
+else
+    echo "No PM2 processes found"
+fi
 
 # Get PM2 logs
 echo "PM2 logs:"
