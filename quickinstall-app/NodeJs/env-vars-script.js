@@ -30,8 +30,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const nodeVersionSelect = form.querySelector(
           '[name="webapp_' + key + '"]',
         );
-        nodeVersionSelect &&
-          nodeVersionSelect.setAttribute("value", appData[key]);
+        if (nodeVersionSelect) {
+          nodeVersionSelect.value = appData[key];
+        }
       } else if (key === "start_script") {
         const startScriptInput = form.querySelector(
           '[name="webapp_' + key + '"]',
@@ -43,6 +44,13 @@ document.addEventListener("DOMContentLoaded", function () {
           '[name="webapp_' + key.toLowerCase() + '"]',
         );
         portInput && portInput.setAttribute("value", appData[key]);
+      } else if (key === "modules_type") {
+        const modulesTypeSelect = form.querySelector(
+          '[name="webapp_' + key + '"]',
+        );
+        if (modulesTypeSelect) {
+          modulesTypeSelect.value = appData[key];
+        }
       } else {
         appendEnvRow(envContainer, key, appData[key]);
       }

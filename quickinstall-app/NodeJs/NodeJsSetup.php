@@ -101,25 +101,31 @@ class NodeJsSetup extends BaseSetup
         $ecosystemPathJs = $appDir . "/ecosystem.config.js";
         $ecosystemPathCjs = $appDir . "/ecosystem.config.cjs";
 
-        // Prefer .cjs if it exists, otherwise use .js
-        $ecosystemPath = file_exists($ecosystemPathCjs)
-            ? $ecosystemPathCjs
-            : $ecosystemPathJs;
+        $result = [];
 
-        if (file_exists($ecosystemPath)) {
-            $content = file_get_contents($ecosystemPath);
-            // Use a more robust regex to extract the start script
-            if (
-                preg_match(
-                    "/script\s*:\s*['\"](.+?)['\"]|script\s*:\s*`(.+?)`/",
-                    $content,
-                    $matches
-                )
-            ) {
-                return ["start_script" => $matches[1] ?? $matches[2]];
-            }
+        if (file_exists($ecosystemPathCjs)) {
+            $ecosystemPath = $ecosystemPathCjs;
+            $result["modules_type"] = "CommonJS";
+        } elseif (file_exists($ecosystemPathJs)) {
+            $ecosystemPath = $ecosystemPathJs;
+            $result["modules_type"] = "ES Modules";
+        } else {
+            return $result; // Return empty array if no ecosystem file found
         }
-        return [];
+
+        $content = file_get_contents($ecosystemPath);
+        // Use a more robust regex to extract the start script
+        if (
+            preg_match(
+                "/script\s*:\s*['\"](.+?)['\"]|script\s*:\s*`(.+?)`/",
+                $content,
+                $matches
+            )
+        ) {
+            $result["start_script"] = $matches[1] ?? $matches[2];
+        }
+
+        return $result;
     }
 
     protected function readNvmrcFile()
