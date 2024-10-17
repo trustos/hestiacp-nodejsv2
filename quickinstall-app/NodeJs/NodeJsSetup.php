@@ -160,10 +160,7 @@ class NodeJsSetup extends BaseSetup
 
         // Also try the original method for comparison
         try {
-            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
-                $this->user,
-                "100",
-            ]);
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", ["100"]);
 
             $output .= "\nOriginal method output:\n";
             if (is_string($logs) && !empty($logs)) {
