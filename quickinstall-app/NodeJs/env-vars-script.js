@@ -9,10 +9,12 @@ document.addEventListener("DOMContentLoaded", function () {
     warningDiv.style.cssText =
       "border-color: #ffeeba; background-color: #fff3cd; color: #856404; display: none;";
     warningDiv.innerHTML = `
-          <div>
-            <strong class="u-mb10">Port in use Warning!</strong>
-            <p class="u-mb10">The port <strong id="port-in-use"></strong> you have chosen is already in use! Make sure that you point the app to the right one</p>
-          </div>
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong class="u-mb10">Application Already Running</strong>
+          <p class="u-mb10">Port <strong id="port-in-use"></strong> is already in use. This likely means an instance of this application is already running on the server.</p>
+          <p>To start a new instance, please stop the existing one first or use a different port.</p>
+        </div>
         `;
 
     // Find the form-container and its h1
