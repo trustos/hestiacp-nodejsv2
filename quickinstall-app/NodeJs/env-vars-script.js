@@ -32,13 +32,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const enteredPort = event.target.value;
         console.log(enteredPort);
 
-        // Check if the entered port is in the openPorts array
-        if (
-          appData["openPorts"] &&
-          appData["openPorts"].includes(parseInt(enteredPort))
-        ) {
-          warningDiv.style.display = "block";
+        // Check if the entered port is in the openPorts object
+        if (appData.openPorts && typeof appData.openPorts === "object") {
+          const isPortInUse = Object.values(appData.openPorts).includes(
+            enteredPort,
+          );
+          if (isPortInUse) {
+            warningDiv.style.display = "block";
+          } else {
+            warningDiv.style.display = "none";
+          }
         } else {
+          console.error("appData.openPorts is not an object or is undefined");
           warningDiv.style.display = "none";
         }
       });
