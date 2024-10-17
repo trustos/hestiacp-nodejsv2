@@ -155,52 +155,29 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs for {$this->domain}:\n\n";
         $output .= "User: $username\n\n";
 
-        // Check if files exist and read their contents
-        $outLogExists = $this->appcontext->runUser("v-run-cli-cmd", [
-            "test",
-            "-f",
-            $outLogPath,
-            "&&",
-            "echo",
-            "exists",
-        ]);
-        $errorLogExists = $this->appcontext->runUser("v-run-cli-cmd", [
-            "test",
-            "-f",
-            $errorLogPath,
-            "&&",
-            "echo",
-            "exists",
-        ]);
-
+        // Check if files exist and read their contents using grep
         $output .= "=== Standard Output Log ===\n";
-        if (trim($outLogExists) === "exists") {
-            $outLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
-                "grep",
-                "",
-                $outLogPath,
-            ]);
-            $output .=
-                is_string($outLogContent) && !empty($outLogContent)
-                    ? $outLogContent
-                    : "Log file is empty.\n";
+        $outLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
+            "grep",
+            "",
+            $outLogPath,
+        ]);
+        if (is_string($outLogContent) && !empty($outLogContent)) {
+            $output .= $outLogContent;
         } else {
-            $output .= "Log file does not exist yet.\n";
+            $output .= "Log file is empty or does not exist.\n";
         }
 
         $output .= "\n=== Error Log ===\n";
-        if (trim($errorLogExists) === "exists") {
-            $errorLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
-                "grep",
-                "",
-                $errorLogPath,
-            ]);
-            $output .=
-                is_string($errorLogContent) && !empty($errorLogContent)
-                    ? $errorLogContent
-                    : "Log file is empty.\n";
+        $errorLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
+            "grep",
+            "",
+            $errorLogPath,
+        ]);
+        if (is_string($errorLogContent) && !empty($errorLogContent)) {
+            $output .= $errorLogContent;
         } else {
-            $output .= "Log file does not exist yet.\n";
+            $output .= "Log file is empty or does not exist.\n";
         }
 
         return $output;
