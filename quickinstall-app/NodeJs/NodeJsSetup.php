@@ -145,26 +145,8 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs for user account:\n\n";
 
         try {
-            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
-                $this->user,
-                "100",
-            ]);
-            if (is_string($logs)) {
-                // Remove the first few lines that contain error messages
-                $logLines = explode("\n", $logs);
-                $startIndex = array_search(
-                    "[TAILING] Tailing last 100 lines for [all] processes (change the value with --lines option)",
-                    $logLines
-                );
-                if ($startIndex !== false) {
-                    $logLines = array_slice($logLines, $startIndex);
-                    $output .= implode("\n", $logLines);
-                } else {
-                    $output .= $logs;
-                }
-            } else {
-                $output .= "No logs available.\n";
-            }
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", ["100"]);
+            $output .= is_string($logs) ? $logs : "No logs available.\n";
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
