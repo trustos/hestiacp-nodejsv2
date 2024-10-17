@@ -142,8 +142,15 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $outLogPath = "~/.pm2/logs/{$this->domain}-out.log";
-        $errorLogPath = "~/.pm2/logs/{$this->domain}-error.log";
+        // Get the home directory for the domain user
+        $homeDir = $this->appcontext->runUser("v-run-cli-cmd", [
+            "echo",
+            '$HOME',
+        ]);
+        $homeDir = trim($homeDir);
+
+        $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
+        $errorLogPath = "$homeDir/.pm2/logs/{$this->domain}-error.log";
 
         // Command to read the entire log files using grep
         $outLogCmd = "grep '' $outLogPath";
