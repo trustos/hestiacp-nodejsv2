@@ -145,39 +145,22 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs Diagnostic:\n\n";
 
         try {
-            // Check if PM2 is installed
-            $pm2Check = $this->appcontext->runUser("v-run-cmd", ["which pm2"]);
-            if (empty($pm2Check)) {
-                $output .= "PM2 is not installed or not in PATH for user {$this->user}\n";
-
-                // Check if NVM is installed and if PM2 is installed via NVM
-                $nvmCheck = $this->appcontext->runUser("v-run-cmd", [
-                    "[ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" && which pm2",
-                ]);
-                if (!empty($nvmCheck)) {
-                    $output .= "PM2 is installed via NVM. Path: $nvmCheck\n";
-                } else {
-                    $output .= "PM2 is not installed via NVM either.\n";
-                }
-
-                return $output;
-            }
-
-            $output .= "PM2 is installed. Path: $pm2Check\n\n";
-
-            // List PM2 processes
-            $pm2List = $this->appcontext->runUser("v-run-cmd", ["pm2 list"]);
-            $output .= "PM2 Processes:\n$pm2List\n\n";
-
-            // Get PM2 logs
-            $logs = $this->appcontext->runUser("v-run-cmd", [
-                "pm2 logs --lines 100 --nostream --raw",
+            $logs = $this->appcontext->runUser("v-list-pm2-logs", [
+                $this->user,
+                "100",
             ]);
 
-            if (!empty($logs)) {
-                $output .= "PM2 Logs:\n$logs\n";
+            if (is_string($logs) && !empty($logs)) {
+                $output .= $logs;
             } else {
-                $output .= "No PM2 logs available.\n";
+                $output .= "No PM2 logs available or unexpected response.\n";
+                $output .= "Response type: " . gettype($logs) . "\n";
+                if (is_bool($logs)) {
+                    $output .=
+                        "Boolean value: " . ($logs ? "true" : "false") . "\n";
+                } elseif (is_array($logs)) {
+                    $output .= "Array content: " . print_r($logs, true) . "\n";
+                }
             }
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
