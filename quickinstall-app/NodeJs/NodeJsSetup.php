@@ -142,10 +142,20 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
+        // Get the current username
+        $username = shell_exec("whoami");
+        $username = trim($username); // Remove any trailing newline
+
+        // Command to get PM2 logs
         $command = "pm2 logs --lines 100 --nostream --raw";
         $logOutput = shell_exec($command);
 
-        return is_string($logOutput) ? $logOutput : "No logs available";
+        // Prepare the output with the username
+        $output = "User running the command: $username\n\n";
+        $output .= "PM2 Logs:\n";
+        $output .= is_string($logOutput) ? $logOutput : "No logs available";
+
+        return $output;
     }
 
     protected function installNvm(array $options): void
