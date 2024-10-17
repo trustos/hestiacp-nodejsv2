@@ -26,7 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     envContainer.style.display = "none"; // Initially collapsed
 
     Object.keys(appData).forEach(function (key) {
-      if (key.toLowerCase() === "port") {
+      if (key === "start_script") {
+        const startScriptInput = form.querySelector(
+          '[name="webapp_' + key + '"]',
+        );
+        startScriptInput &&
+          startScriptInput.setAttribute("value", appData[key]);
+      } else if (key.toLowerCase() === "port") {
         const portInput = form.querySelector(
           '[name="webapp_' + key.toLowerCase() + '"]',
         );
