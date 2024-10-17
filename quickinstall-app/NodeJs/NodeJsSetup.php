@@ -144,22 +144,40 @@ class NodeJsSetup extends BaseSetup
     {
         $output = "PM2 Logs Debug Information:\n\n";
 
-        // Debug: Get user information
+        // Debug: Get user information using multiple methods
         $output .= "Attempting to get user information:\n";
+
+        // Method 1: Using 'id' command
         try {
             $idCommand = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
-            $output .= "Raw 'id' command output: " . $idCommand . "\n\n";
-
-            if (preg_match("/\(([^)]+)\)/", $idCommand, $matches)) {
-                $username = $matches[1];
-                $output .= "Extracted username: $username\n";
-            } else {
-                $output .=
-                    "Failed to extract username from 'id' command output.\n";
-            }
+            $output .= "Raw 'id' command output: " . $idCommand . "\n";
         } catch (\Exception $e) {
             $output .=
                 "Exception when running 'id' command: " .
+                $e->getMessage() .
+                "\n";
+        }
+
+        // Method 2: Using 'whoami' command
+        try {
+            $whoamiCommand = $this->appcontext->runUser("v-run-cli-cmd", [
+                "whoami",
+            ]);
+            $output .= "Raw 'whoami' command output: " . $whoamiCommand . "\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when running 'whoami' command: " .
+                $e->getMessage() .
+                "\n";
+        }
+
+        // Method 3: Using 'pwd' command
+        try {
+            $pwdCommand = $this->appcontext->runUser("v-run-cli-cmd", ["pwd"]);
+            $output .= "Current working directory: " . $pwdCommand . "\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when running 'pwd' command: " .
                 $e->getMessage() .
                 "\n";
         }
@@ -195,22 +213,20 @@ class NodeJsSetup extends BaseSetup
                 "\n";
         }
 
-        // Debug: Check if .pm2 directory exists
-        if (isset($username)) {
-            $output .= "\nChecking for .pm2 directory:\n";
-            try {
-                $checkPm2Dir = $this->appcontext->runUser("v-run-cli-cmd", [
-                    "ls",
-                    "-l",
-                    "/home/$username/.pm2",
-                ]);
-                $output .= "ls -l /home/$username/.pm2 output:\n$checkPm2Dir\n";
-            } catch (\Exception $e) {
-                $output .=
-                    "Exception when checking .pm2 directory: " .
-                    $e->getMessage() .
-                    "\n";
-            }
+        // Debug: Check for .pm2 directory in current directory
+        $output .= "\nChecking for .pm2 directory in current directory:\n";
+        try {
+            $checkPm2Dir = $this->appcontext->runUser("v-run-cli-cmd", [
+                "ls",
+                "-l",
+                ".pm2",
+            ]);
+            $output .= "ls -l .pm2 output:\n$checkPm2Dir\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Exception when checking .pm2 directory: " .
+                $e->getMessage() .
+                "\n";
         }
 
         return $output;
