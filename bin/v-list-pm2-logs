@@ -1,0 +1,65 @@
+#!/bin/bash
+# info: list PM2 logs for a specific domain
+# options: USER DOMAIN [LINES]
+#
+# example: v-list-pm2-logs admin example.com 100
+#
+# This function retrieves the PM2 logs for a specific domain using the pm2 logs command
+
+#----------------------------------------------------------#
+#                Variables & Functions                     #
+#----------------------------------------------------------#
+
+# Argument definition
+user=$1
+domain=$2
+lines=${3:-100}  # Default to 100 lines if not specified
+
+# Includes
+source /etc/hestiacp/hestia.conf
+source $HESTIA/func/main.sh
+source $HESTIA/func/domain.sh
+
+# Additional argument formatting
+format_domain
+
+#----------------------------------------------------------#
+#                    Verifications                         #
+#----------------------------------------------------------#
+
+check_args '2' "$#" 'USER DOMAIN [LINES]'
+is_format_valid 'user' 'domain'
+is_object_valid 'user' 'USER' "$user"
+is_object_unsuspended 'user' 'USER' "$user"
+
+#----------------------------------------------------------#
+#                       Action                             #
+#----------------------------------------------------------#
+
+# Function to run pm2 logs command
+get_pm2_logs() {
+    if [ -s "/home/$user/.nvm/nvm.sh" ]; then
+        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream $domain"
+    else
+        sudo -u $user pm2 logs --lines $lines --nostream $domain
+    fi
+}
+
+# Get PM2 logs
+logs=$(get_pm2_logs)
+
+# Check if logs were retrieved successfully
+if [ $? -eq 0 ]; then
+    echo "$logs"
+else
+    echo "Error retrieving PM2 logs for $domain"
+fi
+
+#----------------------------------------------------------#
+#                       Hestia                             #
+#----------------------------------------------------------#
+
+# Logging
+log_event "$OK" "$ARGUMENTS"
+
+exit
