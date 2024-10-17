@@ -158,6 +158,8 @@ class NodeJsSetup extends BaseSetup
                 $e->getMessage() .
                 "\n\n";
         }
+
+        return $output;
     }
 
     // protected function getPm2Logs()
