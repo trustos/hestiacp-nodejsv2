@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
       logsContainer.style.fontFamily = "monospace";
       logsContainer.style.backgroundColor = "#f5f5f5";
       logsContainer.style.padding = "10px";
+      logsContainer.style.color = "#454545";
       logsContainer.style.border = "1px solid #ddd";
       logsContainer.textContent = appData.pm2Logs;
 
