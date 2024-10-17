@@ -21,18 +21,16 @@ run_as_user() {
 # Check if PM2 is installed
 pm2_path=$(run_as_user "which pm2")
 if [ -z "$pm2_path" ]; then
-    echo "PM2 is not installed or not in PATH for user $user"
-    exit 1
-fi
-
-echo "PM2 path: $pm2_path"
-
-# Check for NVM
-if [ -s "/home/$user/.nvm/nvm.sh" ]; then
-    echo "Using NVM"
-    nvm_prefix="export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\" &&"
+    echo "PM2 is not in PATH, checking NVM..."
+    pm2_path=$(run_as_user "[ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" && which pm2")
+    if [ -z "$pm2_path" ]; then
+        echo "PM2 is not installed or not in PATH for user $user"
+        exit 1
+    fi
+    echo "PM2 found in NVM: $pm2_path"
+    nvm_prefix="[ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" &&"
 else
-    echo "Not using NVM"
+    echo "PM2 found in PATH: $pm2_path"
     nvm_prefix=""
 fi
 

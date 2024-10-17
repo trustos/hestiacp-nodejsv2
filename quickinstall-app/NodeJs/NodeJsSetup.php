@@ -145,35 +145,40 @@ class NodeJsSetup extends BaseSetup
         $output = "PM2 Logs Diagnostic:\n\n";
 
         try {
-            $result = $this->appcontext->runUser("v-list-pm2-logs", [
-                $this->user,
-                "100",
-            ]);
+            // Check if PM2 is installed
+            $pm2Check = $this->appcontext->runUser("which pm2");
+            if (empty($pm2Check)) {
+                $output .= "PM2 is not installed or not in PATH for user {$this->user}\n";
 
-            $output .=
-                "Command execution result type: " . gettype($result) . "\n";
+                // Check if NVM is installed and if PM2 is installed via NVM
+                $nvmCheck = $this->appcontext->runUser(
+                    "[ -s \"$HOME/.nvm/nvm.sh\" ] && . \"$HOME/.nvm/nvm.sh\" && which pm2"
+                );
+                if (!empty($nvmCheck)) {
+                    $output .= "PM2 is installed via NVM. Path: $nvmCheck\n";
+                } else {
+                    $output .= "PM2 is not installed via NVM either.\n";
+                }
 
-            if (is_bool($result)) {
-                $output .=
-                    "Boolean value: " . ($result ? "true" : "false") . "\n";
-            } elseif (is_string($result)) {
-                $output .= "String value:\n" . $result . "\n";
-            } elseif (is_array($result)) {
-                $output .= "Array value:\n" . print_r($result, true) . "\n";
-            } else {
-                $output .= "Unexpected result type\n";
+                return $output;
             }
 
-            // Try to execute the command directly
-            $directOutput = shell_exec(
-                "/usr/local/hestia/bin/v-list-pm2-logs " .
-                    escapeshellarg($this->user) .
-                    " 100"
+            $output .= "PM2 is installed. Path: $pm2Check\n\n";
+
+            // List PM2 processes
+            $pm2List = $this->appcontext->runUser("pm2 list");
+            $output .= "PM2 Processes:\n$pm2List\n\n";
+
+            // Get PM2 logs
+            $logs = $this->appcontext->runUser(
+                "pm2 logs --lines 100 --nostream --raw"
             );
-            $output .=
-                "\nDirect command execution result:\n" .
-                ($directOutput !== null ? $directOutput : "No output") .
-                "\n";
+
+            if (!empty($logs)) {
+                $output .= "PM2 Logs:\n$logs\n";
+            } else {
+                $output .= "No PM2 logs available.\n";
+            }
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
