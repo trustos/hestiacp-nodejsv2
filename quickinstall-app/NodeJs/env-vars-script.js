@@ -26,7 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     envContainer.style.display = "none"; // Initially collapsed
 
     Object.keys(appData).forEach(function (key) {
-      if (key === "start_script") {
+      if (key === "node_version" && appData["node_version"]) {
+        const nodeVersionSelect = form.querySelector(
+          '[name="webapp_' + key + '"]',
+        );
+        nodeVersionSelect &&
+          nodeVersionSelect.setAttribute("value", appData[key]);
+      } else if (key === "start_script") {
         const startScriptInput = form.querySelector(
           '[name="webapp_' + key + '"]',
         );

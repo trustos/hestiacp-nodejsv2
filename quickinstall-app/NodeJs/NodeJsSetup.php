@@ -122,6 +122,18 @@ class NodeJsSetup extends BaseSetup
         return [];
     }
 
+    protected function readNvmrcFile()
+    {
+        $nvmrcPath = $this->nodeJsPaths->getAppDir($this->domain, ".nvmrc");
+        if (file_exists($nvmrcPath)) {
+            $nodeVersion = trim(file_get_contents($nvmrcPath));
+            if (!empty($nodeVersion)) {
+                return ["node_version" => $nodeVersion];
+            }
+        }
+        return [];
+    }
+
     protected function installNvm(array $options): void
     {
         $nodeVersion = $options["node_version"] ?? "v20.18.0";
@@ -172,7 +184,11 @@ class NodeJsSetup extends BaseSetup
     {
         $existingEnv = $this->readExistingEnv();
         $ecosystemData = $this->readEcosystemFile();
-        $combinedData = array_merge($existingEnv, $ecosystemData);
+        $nvmrcData = $this->readNvmrcFile();
+
+        $combinedData = array_merge($existingEnv, $ecosystemData, [
+            "node_version" => $nvmrcData,
+        ]);
         $dataJson = json_encode($combinedData);
 
         $scriptPath = __DIR__ . "/env-vars-script.js";
