@@ -143,10 +143,14 @@ class NodeJsSetup extends BaseSetup
     protected function getPm2Logs()
     {
         // Get the home directory for the domain user
+        // Use sed to get the home directory
         $homeDir = $this->appcontext->runUser("v-run-cli-cmd", [
-            "echo",
-            '$HOME',
+            "sed",
+            "-n",
+            "s/^" . $this->domain . ':x:[0-9]*:[0-9]*:[^:]*:\([^:]*\):.*/\1/p',
+            "/etc/passwd",
         ]);
+        $homeDir = trim($homeDir);
         $homeDir = trim($homeDir);
 
         $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
