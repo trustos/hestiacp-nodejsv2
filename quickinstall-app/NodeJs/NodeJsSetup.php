@@ -142,62 +142,28 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $output = "NodeJS Application Information:\n\n";
+        $output = "NodeJS and PM2 Process Information:\n\n";
 
-        // Try to get package.json content
-        $output .= "Attempting to read package.json:\n";
+        // Attempt to run ps command
         try {
-            $packageJson = $this->appcontext->runUser("v-run-cli-cmd", [
+            $psOutput = $this->appcontext->runUser("v-run-cli-cmd", [
+                "ps",
+                "aux",
+            ]);
+            $output .= "Process list:\n$psOutput\n";
+
+            // Filter for Node.js and PM2 processes
+            $nodeProcesses = $this->appcontext->runUser("v-run-cli-cmd", [
+                "ps",
+                "aux",
+                "|",
                 "grep",
-                "",
-                "package.json",
+                "-E",
+                "(node|pm2)",
             ]);
-            $output .= $packageJson
-                ? "package.json content:\n$packageJson\n"
-                : "package.json not found or empty.\n";
+            $output .= "\nNode.js and PM2 processes:\n$nodeProcesses\n";
         } catch (\Exception $e) {
-            $output .= "Error reading package.json: " . $e->getMessage() . "\n";
-        }
-
-        // Try to list current directory
-        $output .= "\nAttempting to list current directory:\n";
-        try {
-            $lsCurrent = $this->appcontext->runUser("v-run-cli-cmd", [
-                "ls",
-                "-la",
-            ]);
-            $output .= "Current directory contents:\n$lsCurrent\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Error listing current directory: " . $e->getMessage() . "\n";
-        }
-
-        // Try to get Node.js version
-        $output .= "\nAttempting to get Node.js version:\n";
-        try {
-            $nodeVersion = $this->appcontext->runUser("v-run-cli-cmd", [
-                "node",
-                "-v",
-            ]);
-            $output .= "Node.js version: $nodeVersion\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Error getting Node.js version: " . $e->getMessage() . "\n";
-        }
-
-        // Try to list global npm packages
-        $output .= "\nAttempting to list global npm packages:\n";
-        try {
-            $npmList = $this->appcontext->runUser("v-run-cli-cmd", [
-                "npm",
-                "list",
-                "-g",
-                "--depth=0",
-            ]);
-            $output .= "Global npm packages:\n$npmList\n";
-        } catch (\Exception $e) {
-            $output .=
-                "Error listing global npm packages: " . $e->getMessage() . "\n";
+            $output .= "Error running ps command: " . $e->getMessage() . "\n";
         }
 
         return $output;
