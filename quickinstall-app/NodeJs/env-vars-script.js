@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     warningDiv.innerHTML = `
         <i class="fas fa-exclamation-triangle"></i>
         <div>
-          <strong class="u-mb10">Application Already Running</strong>
+          <p class="u-mb10"><strong>Application Already Running</strong></p>
           <p class="u-mb10">Port <strong id="port-in-use"></strong> is already in use. This likely means an instance of this application is already running on the server.</p>
           <p>To start a new instance, please stop the existing one first or use a different port.</p>
         </div>
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
           if (isPortInUse) {
             document.getElementById("port-in-use").textContent = enteredPort;
-            warningDiv.style.display = "block";
+            warningDiv.style.display = "flex";
           } else {
             warningDiv.style.display = "none";
           }
