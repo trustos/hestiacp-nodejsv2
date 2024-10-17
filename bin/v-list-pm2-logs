@@ -1,10 +1,10 @@
-#!/bin/bash
-# info: list PM2 logs for a specific domain
-# options: USER DOMAIN [LINES]
+!/bin/bash
+# info: list PM2 logs for a user
+# options: USER [LINES]
 #
-# example: v-list-pm2-logs admin example.com 100
+# example: v-list-pm2-logs admin 100
 #
-# This function retrieves the PM2 logs for a specific domain using the pm2 logs command
+# This function retrieves the PM2 logs for all domains of a specific user
 
 #----------------------------------------------------------#
 #                Variables & Functions                     #
@@ -12,23 +12,18 @@
 
 # Argument definition
 user=$1
-domain=$2
-lines=${3:-100}  # Default to 100 lines if not specified
+lines=${2:-100}  # Default to 100 lines if not specified
 
 # Includes
 source /etc/hestiacp/hestia.conf
 source $HESTIA/func/main.sh
-source $HESTIA/func/domain.sh
-
-# Additional argument formatting
-format_domain
 
 #----------------------------------------------------------#
 #                    Verifications                         #
 #----------------------------------------------------------#
 
-check_args '2' "$#" 'USER DOMAIN [LINES]'
-is_format_valid 'user' 'domain'
+check_args '1' "$#" 'USER [LINES]'
+is_format_valid 'user'
 is_object_valid 'user' 'USER' "$user"
 is_object_unsuspended 'user' 'USER' "$user"
 
@@ -39,9 +34,9 @@ is_object_unsuspended 'user' 'USER' "$user"
 # Function to run pm2 logs command
 get_pm2_logs() {
     if [ -s "/home/$user/.nvm/nvm.sh" ]; then
-        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream $domain"
+        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream"
     else
-        sudo -u $user pm2 logs --lines $lines --nostream $domain
+        sudo -u $user pm2 logs --lines $lines --nostream
     fi
 }
 
@@ -52,7 +47,7 @@ logs=$(get_pm2_logs)
 if [ $? -eq 0 ]; then
     echo "$logs"
 else
-    echo "Error retrieving PM2 logs for $domain"
+    echo "Error retrieving PM2 logs for user $user"
 fi
 
 #----------------------------------------------------------#
