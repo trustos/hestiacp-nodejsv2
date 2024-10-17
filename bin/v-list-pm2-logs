@@ -12,9 +12,9 @@ lines=${2:-100}
 # Function to run pm2 logs command
 get_pm2_logs() {
     if [ -s "/home/$user/.nvm/nvm.sh" ]; then
-        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream"
+        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream --raw"
     else
-        sudo -u $user pm2 logs --lines $lines --nostream
+        sudo -u $user pm2 logs --lines $lines --nostream --raw
     fi
 }
 
@@ -22,10 +22,10 @@ get_pm2_logs() {
 logs=$(get_pm2_logs)
 
 # Check if logs were retrieved successfully
-if [ $? -eq 0 ]; then
+if [ -n "$logs" ]; then
     echo "$logs"
 else
-    echo "Error retrieving PM2 logs for user $user"
+    echo "No PM2 logs available for user $user"
 fi
 
 exit 0
