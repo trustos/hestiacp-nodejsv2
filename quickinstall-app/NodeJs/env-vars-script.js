@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Append port input listened
     const portInputListener = form.querySelector('[name="webapp_port"]');
 
+    console.log(appData);
+
     if (portInputListener) {
       // Create the warning message div
       const warningDiv = document.createElement("div");
