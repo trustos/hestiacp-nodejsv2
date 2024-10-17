@@ -146,17 +146,7 @@ class NodeJsSetup extends BaseSetup
 
         try {
             $logs = $this->appcontext->runUser("v-list-pm2-logs", ["100"]);
-            if (is_string($logs) && !empty(trim($logs))) {
-                // Remove any lines that start with [TAILING]
-                $logLines = array_filter(explode("\n", $logs), function (
-                    $line
-                ) {
-                    return !preg_match("/^\[TAILING\]/", trim($line));
-                });
-                $output .= implode("\n", $logLines);
-            } else {
-                $output .= "No logs available.\n";
-            }
+            $output .= $logs; // Include all output for debugging
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }

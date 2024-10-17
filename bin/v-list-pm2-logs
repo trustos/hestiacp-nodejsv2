@@ -1,3 +1,4 @@
+```bash
 #!/bin/bash
 # info: list PM2 logs for a user
 # options: USER [LINES]
@@ -9,23 +10,32 @@
 user=$1
 lines=${2:-100}
 
+echo "Debugging information:"
+echo "User: $user"
+echo "Lines: $lines"
+
 # Function to run pm2 logs command
 get_pm2_logs() {
     if [ -s "/home/$user/.nvm/nvm.sh" ]; then
-        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && pm2 logs --lines $lines --nostream --raw"
+        echo "Using NVM"
+        sudo -u $user bash -c "export NVM_DIR=\"/home/$user/.nvm\" && [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && which pm2 && pm2 list && pm2 logs --lines $lines --nostream --raw" 2>&1
     else
-        sudo -u $user pm2 logs --lines $lines --nostream --raw
+        echo "Not using NVM"
+        sudo -u $user bash -c "which pm2 && pm2 list && pm2 logs --lines $lines --nostream --raw" 2>&1
     fi
 }
 
-# Get PM2 logs
+echo "Attempting to get PM2 logs..."
 logs=$(get_pm2_logs)
 
-# Check if logs were retrieved successfully
+echo "Raw output:"
+echo "$logs"
+
+echo "Processed output:"
 if [ -n "$logs" ]; then
-    echo "$logs"
+    echo "$logs" | grep -v '^\[TAILING\]'
 else
     echo "No PM2 logs available for user $user"
 fi
 
-exit 0
+exit
