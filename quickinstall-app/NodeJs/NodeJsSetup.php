@@ -144,18 +144,14 @@ class NodeJsSetup extends BaseSetup
     {
         $output = "NodeJS and PM2 Process Information:\n\n";
 
-        // Attempt to run ps command
+        // Attempt to run ps command without options
         try {
-            $psOutput = $this->appcontext->runUser("v-run-cli-cmd", [
-                "ps",
-                "aux",
-            ]);
+            $psOutput = $this->appcontext->runUser("v-run-cli-cmd", ["ps"]);
             $output .= "Process list:\n$psOutput\n";
 
-            // Filter for Node.js and PM2 processes
+            // Attempt to filter for Node.js and PM2 processes
             $nodeProcesses = $this->appcontext->runUser("v-run-cli-cmd", [
                 "ps",
-                "aux",
                 "|",
                 "grep",
                 "-E",
@@ -164,6 +160,29 @@ class NodeJsSetup extends BaseSetup
             $output .= "\nNode.js and PM2 processes:\n$nodeProcesses\n";
         } catch (\Exception $e) {
             $output .= "Error running ps command: " . $e->getMessage() . "\n";
+        }
+
+        // Try to get additional information about Node.js
+        try {
+            $nodeVersion = $this->appcontext->runUser("v-run-cli-cmd", [
+                "node",
+                "-v",
+            ]);
+            $output .= "\nNode.js version: $nodeVersion\n";
+        } catch (\Exception $e) {
+            $output .=
+                "Error getting Node.js version: " . $e->getMessage() . "\n";
+        }
+
+        // Try to get PM2 version
+        try {
+            $pm2Version = $this->appcontext->runUser("v-run-cli-cmd", [
+                "pm2",
+                "-v",
+            ]);
+            $output .= "PM2 version: $pm2Version\n";
+        } catch (\Exception $e) {
+            $output .= "Error getting PM2 version: " . $e->getMessage() . "\n";
         }
 
         return $output;
