@@ -149,67 +149,28 @@ class NodeJsSetup extends BaseSetup
                 $this->user,
                 "100",
             ]);
-            $output .= is_string($logs) ? $logs : "No logs available.\n";
+            if (is_string($logs)) {
+                // Remove the first few lines that contain error messages
+                $logLines = explode("\n", $logs);
+                $startIndex = array_search(
+                    "[TAILING] Tailing last 100 lines for [all] processes (change the value with --lines option)",
+                    $logLines
+                );
+                if ($startIndex !== false) {
+                    $logLines = array_slice($logLines, $startIndex);
+                    $output .= implode("\n", $logLines);
+                } else {
+                    $output .= $logs;
+                }
+            } else {
+                $output .= "No logs available.\n";
+            }
         } catch (\Exception $e) {
             $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
         }
 
         return $output;
     }
-
-    // protected function getPm2Logs()
-    // {
-    //     // Get user information
-    //     try {
-    //         $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
-    //         preg_match("/\(([^)]+)\)/", $userInfo, $matches);
-    //         $username = $matches[1] ?? $this->domain;
-    //     } catch (\Exception $e) {
-    //         return "Unable to retrieve user information: " . $e->getMessage();
-    //     }
-
-    //     $homeDir = "/home/$username";
-    //     $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
-    //     $errorLogPath = "$homeDir/.pm2/logs/{$this->domain}-error.log";
-
-    //     // Prepare the output
-    //     $output = "PM2 Logs for {$this->domain}:\n\n";
-    //     $output .= "User: $username\n\n";
-
-    //     // Function to safely run grep and handle potential errors
-    //     $safeGrep = function ($path) {
-    //         try {
-    //             return $this->appcontext->runUser("v-run-cli-cmd", [
-    //                 "grep",
-    //                 "-H",
-    //                 "^",
-    //                 $path,
-    //             ]);
-    //         } catch (\Exception $e) {
-    //             return null;
-    //         }
-    //     };
-
-    //     // Check and read standard output log
-    //     $output .= "=== Standard Output Log ===\n";
-    //     $outLogContent = $safeGrep($outLogPath);
-    //     if ($outLogContent !== null && !empty($outLogContent)) {
-    //         $output .= $outLogContent;
-    //     } else {
-    //         $output .= "Log file is empty or does not exist.\n";
-    //     }
-
-    //     // Check and read error log
-    //     $output .= "\n=== Error Log ===\n";
-    //     $errorLogContent = $safeGrep($errorLogPath);
-    //     if ($errorLogContent !== null && !empty($errorLogContent)) {
-    //         $output .= $errorLogContent;
-    //     } else {
-    //         $output .= "Log file is empty or does not exist.\n";
-    //     }
-
-    //     return $output;
-    // }
 
     protected function installNvm(array $options): void
     {

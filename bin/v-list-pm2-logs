@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 # info: list PM2 logs for a user
 # options: USER [LINES]
 #
@@ -6,30 +6,8 @@
 #
 # This function retrieves the PM2 logs for all domains of a specific user
 
-#----------------------------------------------------------#
-#                Variables & Functions                     #
-#----------------------------------------------------------#
-
-# Argument definition
 user=$1
-lines=${2:-100}  # Default to 100 lines if not specified
-
-# Includes
-source /etc/hestiacp/hestia.conf
-source $HESTIA/func/main.sh
-
-#----------------------------------------------------------#
-#                    Verifications                         #
-#----------------------------------------------------------#
-
-check_args '1' "$#" 'USER [LINES]'
-is_format_valid 'user'
-is_object_valid 'user' 'USER' "$user"
-is_object_unsuspended 'user' 'USER' "$user"
-
-#----------------------------------------------------------#
-#                       Action                             #
-#----------------------------------------------------------#
+lines=${2:-100}
 
 # Function to run pm2 logs command
 get_pm2_logs() {
@@ -50,11 +28,4 @@ else
     echo "Error retrieving PM2 logs for user $user"
 fi
 
-#----------------------------------------------------------#
-#                       Hestia                             #
-#----------------------------------------------------------#
-
-# Logging
-log_event "$OK" "$ARGUMENTS"
-
-exit
+exit 0
