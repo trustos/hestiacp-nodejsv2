@@ -142,13 +142,10 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $command = "pm2 logs --lines 100 --nostream --raw";
-        $logOutput = $this->appcontext->runUser("v-run-cli-cmd", [
-            $this->domain,
-            $command,
-        ]);
+        $command = "su - {$this->domain} -c 'pm2 logs --lines 100 --nostream --raw'";
+        $logOutput = shell_exec($command);
 
-        return is_string($logOutput) ? $logOutput : "";
+        return is_string($logOutput) ? $logOutput : "No logs available";
     }
 
     protected function installNvm(array $options): void
