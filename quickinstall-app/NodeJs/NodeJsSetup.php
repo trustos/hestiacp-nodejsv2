@@ -151,13 +151,11 @@ class NodeJsSetup extends BaseSetup
 
         // Use v-run-cli-cmd to execute the commands
         $outLog = $this->appcontext->runUser("v-run-cli-cmd", [
-            $this->domain,
             "grep",
             "''",
             $outLogPath,
         ]);
         $errorLog = $this->appcontext->runUser("v-run-cli-cmd", [
-            $this->domain,
             "grep",
             "''",
             $errorLogPath,
