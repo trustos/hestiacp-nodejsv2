@@ -142,18 +142,35 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        // Get the current username
-        $username = shell_exec("whoami");
-        $username = trim($username); // Remove any trailing newline
+        $outLogPath = "~/.pm2/logs/{$this->domain}-out.log";
+        $errorLogPath = "~/.pm2/logs/{$this->domain}-error.log";
 
-        // Command to get PM2 logs
-        $command = "pm2 logs --lines 100 --nostream --raw";
-        $logOutput = shell_exec($command);
+        // Command to read the entire log files
+        $outLogCmd = "cat $outLogPath";
+        $errorLogCmd = "cat $errorLogPath";
 
-        // Prepare the output with the username
-        $output = "User running the command: $username\n\n";
-        $output .= "PM2 Logs:\n";
-        $output .= is_string($logOutput) ? $logOutput : "No logs available";
+        // Use v-run-cli-cmd to execute the commands
+        $outLog = $this->appcontext->runUser("v-run-cli-cmd", [
+            $this->domain,
+            $outLogCmd,
+        ]);
+        $errorLog = $this->appcontext->runUser("v-run-cli-cmd", [
+            $this->domain,
+            $errorLogCmd,
+        ]);
+
+        // Prepare the output
+        $output = "PM2 Logs for {$this->domain}:\n\n";
+        $output .= "=== Standard Output Log ===\n";
+        $output .=
+            is_string($outLog) && !empty($outLog)
+                ? $outLog
+                : "No standard output logs available.\n";
+        $output .= "\n=== Error Log ===\n";
+        $output .=
+            is_string($errorLog) && !empty($errorLog)
+                ? $errorLog
+                : "No error logs available.\n";
 
         return $output;
     }
