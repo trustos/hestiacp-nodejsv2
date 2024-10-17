@@ -142,50 +142,22 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        $output = "NodeJS and PM2 Process Information:\n\n";
+        $output = "NodeJS Application Information:\n\n";
 
-        // Attempt to run ps command without options
+        // List contents of the public_html directory
         try {
-            $psOutput = $this->appcontext->runUser("v-run-cli-cmd", ["ps"]);
-            $output .= "Process list:\n$psOutput\n";
-
-            // Attempt to filter for Node.js and PM2 processes
-            $nodeProcesses = $this->appcontext->runUser("v-run-cli-cmd", [
-                "ps",
-                "|",
-                "grep",
-                "-E",
-                "(node|pm2)",
+            $lsOutput = $this->appcontext->runUser("v-run-cli-cmd", [
+                "ls",
+                "-la",
+                "~/.pm2/logs",
             ]);
-            $output .= "\nNode.js and PM2 processes:\n$nodeProcesses\n";
-        } catch (\Exception $e) {
-            $output .= "Error running ps command: " . $e->getMessage() . "\n";
-        }
-
-        // Try to get additional information about Node.js
-        try {
-            $nodeVersion = $this->appcontext->runUser("v-run-cli-cmd", [
-                "node",
-                "-v",
-            ]);
-            $output .= "\nNode.js version: $nodeVersion\n";
+            $output .= "Contents of pm2 logs directory:\n$lsOutput\n\n";
         } catch (\Exception $e) {
             $output .=
-                "Error getting Node.js version: " . $e->getMessage() . "\n";
+                "Error listing pm2 logs directory: " .
+                $e->getMessage() .
+                "\n\n";
         }
-
-        // Try to get PM2 version
-        try {
-            $pm2Version = $this->appcontext->runUser("v-run-cli-cmd", [
-                "pm2",
-                "-v",
-            ]);
-            $output .= "PM2 version: $pm2Version\n";
-        } catch (\Exception $e) {
-            $output .= "Error getting PM2 version: " . $e->getMessage() . "\n";
-        }
-
-        return $output;
     }
 
     // protected function getPm2Logs()
