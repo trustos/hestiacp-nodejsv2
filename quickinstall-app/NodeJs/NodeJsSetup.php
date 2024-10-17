@@ -142,48 +142,66 @@ class NodeJsSetup extends BaseSetup
 
     protected function getPm2Logs()
     {
-        // Get the home directory for the domain user
-        // Use sed to get the home directory
-        $homeDir = $this->appcontext->runUser("v-run-cli-cmd", [
-            "sed",
-            "-n",
-            "s/^" . $this->domain . ':x:[0-9]*:[0-9]*:[^:]*:\([^:]*\):.*/\1/p',
-            "/etc/passwd",
-        ]);
-        $homeDir = trim($homeDir);
-        $homeDir = trim($homeDir);
+        // Get user information
+        $userInfo = $this->appcontext->runUser("v-run-cli-cmd", ["id"]);
+        preg_match("/\(([^)]+)\)/", $userInfo, $matches);
+        $username = $matches[1] ?? $this->domain;
 
+        $homeDir = "/home/$username";
         $outLogPath = "$homeDir/.pm2/logs/{$this->domain}-out.log";
         $errorLogPath = "$homeDir/.pm2/logs/{$this->domain}-error.log";
 
-        // Command to read the entire log files using grep
-        $outLogCmd = "grep '' $outLogPath";
-        $errorLogCmd = "grep '' $errorLogPath";
-
-        // Use v-run-cli-cmd to execute the commands
-        $outLog = $this->appcontext->runUser("v-run-cli-cmd", [
-            "grep",
-            "''",
-            $outLogPath,
-        ]);
-        $errorLog = $this->appcontext->runUser("v-run-cli-cmd", [
-            "grep",
-            "''",
-            $errorLogPath,
-        ]);
-
         // Prepare the output
         $output = "PM2 Logs for {$this->domain}:\n\n";
+        $output .= "User: $username\n\n";
+
+        // Check if files exist and read their contents
+        $outLogExists = $this->appcontext->runUser("v-run-cli-cmd", [
+            "test",
+            "-f",
+            $outLogPath,
+            "&&",
+            "echo",
+            "exists",
+        ]);
+        $errorLogExists = $this->appcontext->runUser("v-run-cli-cmd", [
+            "test",
+            "-f",
+            $errorLogPath,
+            "&&",
+            "echo",
+            "exists",
+        ]);
+
         $output .= "=== Standard Output Log ===\n";
-        $output .=
-            is_string($outLog) && !empty($outLog)
-                ? $outLog
-                : "No standard output logs available.\n";
+        if (trim($outLogExists) === "exists") {
+            $outLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
+                "grep",
+                "",
+                $outLogPath,
+            ]);
+            $output .=
+                is_string($outLogContent) && !empty($outLogContent)
+                    ? $outLogContent
+                    : "Log file is empty.\n";
+        } else {
+            $output .= "Log file does not exist yet.\n";
+        }
+
         $output .= "\n=== Error Log ===\n";
-        $output .=
-            is_string($errorLog) && !empty($errorLog)
-                ? $errorLog
-                : "No error logs available.\n";
+        if (trim($errorLogExists) === "exists") {
+            $errorLogContent = $this->appcontext->runUser("v-run-cli-cmd", [
+                "grep",
+                "",
+                $errorLogPath,
+            ]);
+            $output .=
+                is_string($errorLogContent) && !empty($errorLogContent)
+                    ? $errorLogContent
+                    : "Log file is empty.\n";
+        } else {
+            $output .= "Log file does not exist yet.\n";
+        }
 
         return $output;
     }
