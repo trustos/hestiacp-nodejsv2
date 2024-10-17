@@ -53,40 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Add PM2 Logs Section
-    if (appData.pm2Logs) {
-      var logsSection = document.createElement("div");
-      logsSection.className = "u-mb10";
-
-      var logsHeader = document.createElement("div");
-      logsHeader.innerHTML = '<h4 style="cursor: pointer;">PM2 Logs ▼</h4>';
-      logsHeader.onclick = function () {
-        logsContainer.style.display =
-          logsContainer.style.display === "none" ? "block" : "none";
-        this.querySelector("h4").innerHTML =
-          "PM2 Logs " + (logsContainer.style.display === "none" ? "▼" : "▲");
-      };
-      logsSection.appendChild(logsHeader);
-
-      var logsContainer = document.createElement("div");
-      logsContainer.id = "pm2-logs-container";
-      logsContainer.style.display = "none";
-      logsContainer.style.maxHeight = "400px";
-      logsContainer.style.overflow = "auto";
-      logsContainer.style.whiteSpace = "pre-wrap";
-      logsContainer.style.fontFamily = "monospace";
-      logsContainer.style.backgroundColor = "#f5f5f5";
-      logsContainer.style.padding = "10px";
-      logsContainer.style.color = "#454545";
-      logsContainer.style.border = "1px solid #ddd";
-      logsContainer.textContent = appData.pm2Logs;
-
-      logsSection.appendChild(logsContainer);
-
-      // Append the logs section to the form
-      form.querySelector(".form-container").appendChild(logsSection);
-    }
-
     // Create and append Environment Variables Section
     var envSection = document.createElement("div");
     envSection.className = "u-mb10";
@@ -134,8 +100,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (modulesTypeSelect) {
           modulesTypeSelect.value = appData[key];
         }
-      } else if (key === "openPorts" || key === "pm2Logs") {
-        // Do not process openPorts and pm2Logs
+      } else if (key === "openPorts") {
+        // Do not process openPorts
       } else {
         appendEnvRow(envContainer, key, appData[key]);
       }

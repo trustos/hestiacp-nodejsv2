@@ -140,48 +140,6 @@ class NodeJsSetup extends BaseSetup
         return [];
     }
 
-    protected function getPm2Logs()
-    {
-        $output = "PM2 Logs Diagnostic:\n\n";
-
-        // Execute v-list-pm2-logs directly
-        $command =
-            "/usr/local/hestia/bin/v-list-pm2-logs " .
-            escapeshellarg($this->user) .
-            " 100";
-        $directOutput = shell_exec($command);
-
-        $output .= "Direct command output:\n";
-        if ($directOutput !== null) {
-            $output .= $directOutput;
-        } else {
-            $output .= "No output from direct command execution\n";
-        }
-
-        // Also try the original method for comparison
-        try {
-            $logs = $this->appcontext->runUser("v-list-pm2-logs", ["100"]);
-
-            $output .= "\nOriginal method output:\n";
-            if (is_string($logs) && !empty($logs)) {
-                $output .= $logs;
-            } else {
-                $output .= "No PM2 logs available or unexpected response.\n";
-                $output .= "Response type: " . gettype($logs) . "\n";
-                if (is_bool($logs)) {
-                    $output .=
-                        "Boolean value: " . ($logs ? "true" : "false") . "\n";
-                } elseif (is_array($logs)) {
-                    $output .= "Array content: " . print_r($logs, true) . "\n";
-                }
-            }
-        } catch (\Exception $e) {
-            $output .= "Error retrieving PM2 logs: " . $e->getMessage() . "\n";
-        }
-
-        return $output;
-    }
-
     protected function installNvm(array $options): void
     {
         $nodeVersion = $options["node_version"] ?? "v20.18.0";
@@ -233,10 +191,8 @@ class NodeJsSetup extends BaseSetup
         $existingEnv = $this->readExistingEnv();
         $ecosystemData = $this->readEcosystemFile();
         $nvmrcData = $this->readNvmrcFile();
-        $pm2Logs = $this->getPm2Logs();
 
         $combinedData = array_merge($existingEnv, $ecosystemData, $nvmrcData);
-        $combinedData["pm2Logs"] = $pm2Logs;
 
         // Get open ports
         $openPorts = shell_exec(
