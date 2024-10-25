@@ -101,6 +101,12 @@ wget -qO- https://raw.githubusercontent.com/trustos/hestiacp-nodejsv2/refs/heads
 
 ## FAQ
 
+### I am getting an error about nvm not being able to install.
+
+This happens if you have a global nvm installation and the script is trying to install nvm for the user.
+You should make sure to remove the nvm for the root user and $NVM_DIR should not be in the $PATH var.
+
+
 ### Where to find the logs
 
 Most of the actions performed by the script are logged in the Profile -> "Logs" section of the HestiaCP panel.
